@@ -2,10 +2,11 @@ import {View, Text, Button as NativeButton} from 'react-native';
 
 interface Props {
     text:string;
+    onPress:any
 }
 
-const Button = ({text}: Props) => {
-  return <NativeButton title={text} />;
+const Button = ({text,onPress}: Props) => {
+  return <NativeButton title={text} onPress={onPress} />;
 };
 
 export default Button;
