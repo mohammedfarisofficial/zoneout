@@ -14,12 +14,11 @@ if linkage != nil
   use_frameworks! :linkage => linkage.to_sym
 end
 
-use_frameworks!
+use_frameworks! :linkage => :static
 
 target 'Zoneout' do
   config = use_native_modules!
   pod 'MapboxMaps', '10.18.2'
-
 
   use_react_native!(
     :path => config[:reactNativePath],
@@ -34,6 +33,14 @@ target 'Zoneout' do
 
   pre_install do |installer|
     $RNMapboxMaps.pre_install(installer)
+    
+    installer.pod_targets.each do |pod|
+      if pod.name.eql?('RNScreens')
+        def pod.build_type
+          Pod::BuildType.static_library
+        end
+      end
+    end
   end
 
   post_install do |installer|
@@ -46,5 +53,3 @@ target 'Zoneout' do
     )
   end
 end
-
-

@@ -10,6 +10,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@gorhom/bottom-sheet": "^5.0.5",
     "@miblanchard/react-native-slider": "^2.6.0",
     "@react-native-community/geolocation": "^3.4.0",
     "@rnmapbox/maps": "github:rnmapbox/maps#main",
@@ -18,6 +19,8 @@
     "react": "18.3.1",
     "react-native": "0.75.3",
     "react-native-dotenv": "^3.4.11",
+    "react-native-gesture-handler": "^2.20.2",
+    "react-native-reanimated": "^3.16.1",
     "react-native-rename": "^3.2.14",
     "socket.io-client": "^4.7.5"
   },

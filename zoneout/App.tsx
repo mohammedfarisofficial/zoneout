@@ -1,9 +1,12 @@
-import { View, Text } from 'react-native'
-import React from 'react'
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import MapScreen from './src/screens/main/MapScreen'
 
 const App = () => {
-  return <MapScreen/>
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <MapScreen/>
+    </GestureHandlerRootView>
+  )
 }
 
 export default App
