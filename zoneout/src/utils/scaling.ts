@@ -23,6 +23,5 @@ export const widthPercentage = (size:string) : number =>{
 export const heightPercentage = (size:string) : number =>{
   return hp(size)
 } 
-
 export const screenWidth: number = Dimensions.get("window").width;
 export const screenHeight: number = Dimensions.get("window").height;
