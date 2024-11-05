@@ -13,6 +13,16 @@ module.exports = {
         verbose: false,
       },
     ],
+    [
+      'module-resolver',
+      {
+        extensions: ['.ios.js', '.android.js', '.ios.jsx', '.android.jsx', '.js', '.jsx', '.json', '.ts', '.tsx'],
+        root: ['.'],
+        alias: {
+          '@screens': './src/screens',
+        },
+      },
+    ],
     'react-native-reanimated/plugin',
   ],
 };

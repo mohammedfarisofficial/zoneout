@@ -5,7 +5,7 @@ import Typography from '../../../components/ui/Typography';
 import BottomSheet, {BottomSheetView} from '@gorhom/bottom-sheet';
 import {useCallback, useMemo, useRef} from 'react';
 
-const WelcomeScreen = () => {
+const WelcomeScreen = ({navigation}) => {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ['35%'], []);
 
@@ -30,7 +30,7 @@ const WelcomeScreen = () => {
         index={-1}
         onChange={handleSheetChanges}>
         <BottomSheetView style={styles.contentContainer}>
-          <Button text="SignUp with google" onPress={() => {}} />
+          <Button text="SignUp with google" onPress={() => {navigation.navigate("map")}} />
           <Button text="SignUp with apple" onPress={() => {}} />
           <Button text="SignUp with email" onPress={() => {}} />
         </BottomSheetView>
