@@ -1,9 +1,10 @@
+import {useCallback, useMemo, useRef} from 'react';
 import {Text, SafeAreaView} from 'react-native';
 import {styles} from './styles';
-import Button from '../../../components/ui/Button';
-import Typography from '../../../components/ui/Typography';
 import BottomSheet, {BottomSheetView} from '@gorhom/bottom-sheet';
-import {useCallback, useMemo, useRef} from 'react';
+
+import Typography from '@components/ui/Typography';
+import Button from '@components/ui/Button';
 
 const WelcomeScreen = ({navigation}) => {
   const bottomSheetRef = useRef<BottomSheet>(null);
@@ -20,7 +21,8 @@ const WelcomeScreen = ({navigation}) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={{fontFamily: 'Poppins-Thin'}}>WelcomeScreen</Text>
+      {/* <Text style={{fontFamily: 'Poppins-Thin'}}>WelcomeScreen</Text> */}
+      {/* <Typography>Welcome</Typography> */}
       <Button text="Get Started" onPress={openBottomSheet} />
       <BottomSheet
         backgroundStyle={styles.sheetContainer}
@@ -30,7 +32,7 @@ const WelcomeScreen = ({navigation}) => {
         index={-1}
         onChange={handleSheetChanges}>
         <BottomSheetView style={styles.contentContainer}>
-          <Button text="SignUp with google" onPress={() => {navigation.navigate("map")}} />
+          <Button text="SignUp with google" variant='secondary' onPress={() => {navigation.navigate("map")}} />
           <Button text="SignUp with apple" onPress={() => {}} />
           <Button text="SignUp with email" onPress={() => {}} />
         </BottomSheetView>

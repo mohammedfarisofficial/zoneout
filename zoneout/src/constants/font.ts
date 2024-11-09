@@ -1,8 +1,8 @@
-const ROBOTO_PREFIX = "Roboto"
+const POPPINS_PREFIX = "Poppins"
 
-export const ROBOTO_BLACK                = `${ROBOTO_PREFIX}-Black`
-export const ROBOTO_BOLD                 = `${ROBOTO_PREFIX}-Bold`
-export const ROBOTO_LIGHT                = `${ROBOTO_PREFIX}-Light`
-export const ROBOTO_MEDIUM               = `${ROBOTO_PREFIX}-Medium`
-export const ROBOTO_REGULAR              = `${ROBOTO_PREFIX}-Regular`
-export const ROBOTO_THIN                 = `${ROBOTO_PREFIX}-Thin`
+export const POPPINS_BLACK                = `${POPPINS_PREFIX}-Black`
+export const POPPINS_BOLD                 = `${POPPINS_PREFIX}-Bold`
+export const POPPINS_LIGHT                = `${POPPINS_PREFIX}-Light`
+export const POPPINS_MEDIUM               = `${POPPINS_PREFIX}-Medium`
+export const POPPINS_REGULAR              = `${POPPINS_PREFIX}-Regular`
+export const POPPINS_THIN                 = `${POPPINS_PREFIX}-Thin`
