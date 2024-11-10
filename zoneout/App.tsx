@@ -1,11 +1,13 @@
 // src/App.tsx
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, View, LogBox } from 'react-native';
 
 import AuthStackNavigator from 'src/navigation/AuthStackNavigator';
 import MainBottomTabNavigator from 'src/navigation/main/MainBottomTabNavigator';
 import { AuthProvider, useAuth } from 'src/context/AuthContext';
+
+LogBox.ignoreLogs(['Sending `onAnimatedValueUpdate` with no listeners registered.']);
 
 const AppContent = () => {
   const { isLogged } = useAuth();
