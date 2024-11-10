@@ -22,6 +22,7 @@ module.exports = {
           '@screens': './src/screens',
           '@constants': './src/constants',
           '@components': './src/components',
+          '@services': './src/services',
         },
       },
     ],

@@ -1,7 +1,7 @@
 import { TextStyle, TouchableOpacity, ViewStyle } from "react-native";
 import { styles, containerVariants, textVariants } from "./styles";
 
-import Typography from "@components/ui/Typography";
+import Typography from "@components/ui/typography";
 
 import * as FONTS from "@constants/font";
 
@@ -26,6 +26,7 @@ const Button = ({
 
   return (
     <TouchableOpacity
+      activeOpacity={0.8}
       style={[
         styles.container,
         containerStyle,

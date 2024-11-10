@@ -1,22 +1,35 @@
+// src/App.tsx
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import { ActivityIndicator, View } from 'react-native';
 
-import WelcomeScreen from '@screens/auth/WelcomeScreen';
-import MapScreen from '@screens/main/MapScreen';
+import AuthStackNavigator from 'src/navigation/AuthStackNavigator';
+import MainBottomTabNavigator from 'src/navigation/main/MainBottomTabNavigator';
+import { AuthProvider, useAuth } from 'src/context/AuthContext';
 
-const Stack = createStackNavigator();
-const App = () => {
-  return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+const AppContent = () => {
+  const { isLogged } = useAuth();
+
+  // Show loading indicator while checking login state
+  if (isLogged === null) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
+
+  return isLogged ? <MainBottomTabNavigator /> : <AuthStackNavigator />;
+};
+
+const App = () => (
+  <GestureHandlerRootView style={{ flex: 1 }}>
+    <AuthProvider>
       <NavigationContainer>
-        <Stack.Navigator>
-          <Stack.Screen name="welcome" component={WelcomeScreen} />
-          <Stack.Screen name="map" component={MapScreen} />
-        </Stack.Navigator>
+        <AppContent />
       </NavigationContainer>
-    </GestureHandlerRootView>
-  )
-}
+    </AuthProvider>
+  </GestureHandlerRootView>
+);
 
-export default App
+export default App;

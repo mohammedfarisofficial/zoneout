@@ -21,6 +21,7 @@ import * as turf from '@turf/turf';  // Turf.js for generating polygons
 import axios from 'axios';
 import { requestLocationPermission } from '../../../utils/geolocation';
 import { socket } from '../../../services/socketio';
+import { useAuth } from 'src/context/AuthContext';
 
 // Test coords
 const IES_COORDS = [76.14814461016903, 10.564417196053261];
@@ -30,11 +31,13 @@ const USER_ID = '66e6fdde8b16924feae61f5f';
 
 Mapbox.setAccessToken(REACT_APP_MAPBOX_ACCESS_TOKEN);
 
-const MapScreen = () => {
+const MapScreen = ({navigation}:any) => {
   const cameraRef = useRef<Camera | null>(null);
   const [eventCoords, setEventCoords] = useState(null);
   const [radius, setRadius] = useState(10);
   const [events, setEvents] = useState([]);
+
+  const { logout } = useAuth();
 
   useEffect(() => {
     const startWatchingPosition = async () => {
@@ -137,6 +140,19 @@ const MapScreen = () => {
           width: 44,
           height: 44,
           backgroundColor: '#788D5D',
+          borderRadius: 50,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}></View>
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={logout}
+        style={{position: 'absolute', top: 150, right: 10, zIndex: 99}}
+        activeOpacity={0.5}>
+        <View style={{
+          width: 44,
+          height: 44,
+          backgroundColor: '#783D5D',
           borderRadius: 50,
           justifyContent: 'center',
           alignItems: 'center',

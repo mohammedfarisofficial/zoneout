@@ -1,18 +1,22 @@
-import { StyleSheet } from "react-native";
+import {ScaledSheet} from 'react-native-size-matters';
 
-export const styles = StyleSheet.create({
+import * as COLORS from '@constants/colors';
+
+export const styles = ScaledSheet.create({
     container: {
         flex: 1,
         backgroundColor:"lightgray"
     },
     contentContainer: {
         flex: 1,
-        padding: 36,
         alignItems: 'center',
-        borderRadius: 150
+        paddingTop: "10@s"
     },
     sheetContainer: {
         backgroundColor:'white',
-        borderRadius:30
+        borderRadius:"30@s"
+    },
+    sheetHeaderText: {
+        marginBottom: "12@vs"
     }
 })

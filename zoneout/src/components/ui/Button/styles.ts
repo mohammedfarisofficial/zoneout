@@ -6,7 +6,7 @@ export const styles = ScaledSheet.create({
   container: {
     backgroundColor: 'pink',
     width: '300@s',
-    paddingVertical: '10@vs',
+    paddingVertical: '12@vs',
     margin: '1@s',
     borderRadius: 50,
     justifyContent: 'center',
