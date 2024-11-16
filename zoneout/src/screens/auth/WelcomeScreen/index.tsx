@@ -1,15 +1,16 @@
-import {useCallback, useMemo, useRef} from 'react';
-import {SafeAreaView} from 'react-native';
-import BottomSheet, {BottomSheetView} from '@gorhom/bottom-sheet';
-import {styles} from './styles';
+import { useCallback, useMemo, useRef } from 'react';
+import { styles } from './styles';
+import { SafeAreaView } from 'react-native';
+import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 
+import AuthCTAButton, { AuthCTAButtonVariants } from '@components/ui/auth/auth-button';
 import Typography from '@components/ui/typography';
 import Button from '@components/ui/button';
 
 import * as FONTS from '@constants/font';
 import * as ROUTES from '@constants/routes';
 
-const WelcomeScreen = ({navigation}: any) => {
+const WelcomeScreen = ({ navigation }: any) => {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ['40%'], []);
 
@@ -22,7 +23,7 @@ const WelcomeScreen = ({navigation}: any) => {
   };
 
   const signUpHandler = () => {
-    navigation.navigate(ROUTES.SIGN_UP, {screen: ROUTES.SIGN_UP_EMAIL});
+    navigation.navigate(ROUTES.SIGN_UP, { screen: ROUTES.SIGN_UP_EMAIL });
   };
 
   return (
@@ -37,29 +38,23 @@ const WelcomeScreen = ({navigation}: any) => {
         onChange={handleSheetChanges}>
         <BottomSheetView style={styles.contentContainer}>
           <Typography variant="h4" fontFamily={FONTS.POPPINS_MEDIUM}>
-            Create an account to continue
+            Sign In or Create Account
           </Typography>
           <Typography variant="h8" fontFamily={FONTS.POPPINS_REGULAR}>
-            By continuing, you agree to our Your agreement and
+            By continuing, you agree to our Terms and
           </Typography>
-          <Typography
-            variant="h8"
-            style={styles.sheetHeaderText}
-            fontFamily={FONTS.POPPINS_REGULAR}>
-            acknowledge that you understand the Privacy Policy
+          <Typography variant="h8" style={styles.sheetHeaderText} fontFamily={FONTS.POPPINS_REGULAR}>
+            Privacy Policy.
           </Typography>
-          <Button
+          <AuthCTAButton
             text="Continue with Google"
+            variant={AuthCTAButtonVariants.GOOGLE}
             onPress={() => {
               navigation.navigate('map');
             }}
           />
-          <Button text="Continue with Apple" onPress={() => {}} />
-          <Button
-            text="Continue with Email"
-            variant="secondary"
-            onPress={signUpHandler}
-          />
+          <AuthCTAButton text="Continue with Apple" onPress={() => {}} variant={AuthCTAButtonVariants.APPLE} />
+          <AuthCTAButton text="Continue with Email" onPress={signUpHandler} variant={AuthCTAButtonVariants.EMAIL} />
         </BottomSheetView>
       </BottomSheet>
     </SafeAreaView>

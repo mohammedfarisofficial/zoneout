@@ -1,9 +1,9 @@
-import { TextStyle, TouchableOpacity, ViewStyle } from "react-native";
-import { styles, containerVariants, textVariants } from "./styles";
+import {TextStyle, TouchableOpacity, ViewStyle} from 'react-native';
+import {styles, containerVariants, textVariants} from './styles';
 
-import Typography from "@components/ui/typography";
+import Typography from '@components/ui/typography';
 
-import * as FONTS from "@constants/font";
+import * as FONTS from '@constants/font';
 
 interface Props {
   text?: string;
@@ -11,7 +11,7 @@ interface Props {
   textSize?: number;
   fontFamily?: string;
   containerStyle?: ViewStyle;
-  variant?: "primary" | "secondary" | "outline"; 
+  variant?: 'primary' | 'secondary' | 'outline';
   onPress: () => void;
 }
 
@@ -21,24 +21,17 @@ const Button = ({
   textSize,
   onPress,
   containerStyle,
-  variant = "primary", 
+  variant = 'primary',
 }: Props) => {
-
   return (
     <TouchableOpacity
       activeOpacity={0.8}
-      style={[
-        styles.container,
-        containerStyle,
-        containerVariants[variant],
-      ]}
       onPress={onPress}
-    >
+      style={[styles.container, containerStyle, containerVariants[variant]]}>
       <Typography
-        style={[styles.textDefault, textStyle,textVariants[variant]]}
         fontSize={textSize}
         fontFamily={FONTS.POPPINS_MEDIUM}
-      >
+        style={[styles.textDefault, textStyle, textVariants[variant]]}>
         {text}
       </Typography>
     </TouchableOpacity>
