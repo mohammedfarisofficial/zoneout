@@ -1,6 +1,7 @@
 // src/context/AuthContext.tsx
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import * as LocalStorage from '@services/local-storage';
+// import * as LocalStorage from '@services/local-storage';
+import { appStorage } from '@services/mmkv-storage';
 
 interface AuthContextProps {
   isLogged: boolean | null;
@@ -15,14 +16,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const checkLoginStatus = async () => {
-      const loggedStatus = await LocalStorage.getItem('isLogged');
+      const loggedStatus = appStorage.getItem('isLogged');
       setIsLogged(loggedStatus === 'true');
     };
     checkLoginStatus();
   }, []);
 
   const logout = async () => {
-    await LocalStorage.removeItem('isLogged');
+    appStorage.removeItem("isLogged")
     setIsLogged(false);
   };
 
