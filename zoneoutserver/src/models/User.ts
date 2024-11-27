@@ -16,12 +16,17 @@ const UserSchema: Schema = new Schema({
       type: String,
       required: true,
    },
+   password: {
+      type: String,
+   },
    socket_id: {
       type: String,
    },
    geohash: {
       type: String,
    },
+   otp_code: { type: String, required: false },
+   otp_expiry: { type: Date, required: false },
    location: {
       type: {
          type: String,

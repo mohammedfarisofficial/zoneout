@@ -1,12 +1,12 @@
-import {createStackNavigator} from '@react-navigation/stack';
+import { createStackNavigator } from "@react-navigation/stack";
 
-import SelectCollegeScreen from '@screens/auth/SelectCollegeScreen';
-import SetProfileScreen from '@screens/auth/SetProfileScreen';
-import SignUpScreen from '@screens/auth/SignUpScreen';
-import SetDOBScreen from '@screens/auth/SetDOBScreen';
-import OTPScreen from '@screens/auth/OTPScreen';
+import SelectCollegeScreen from "@screens/auth/SelectCollegeScreen";
+import SetProfileScreen from "@screens/auth/SetProfileScreen";
+import SignUpScreen from "@screens/auth/SignUpScreen";
+import SetDOBScreen from "@screens/auth/SetDOBScreen";
+import OTPScreen from "@screens/auth/OTPScreen";
 
-import * as ROUTES from '@constants/routes';
+import * as ROUTES from "@constants/routes";
 
 const Stack = createStackNavigator();
 

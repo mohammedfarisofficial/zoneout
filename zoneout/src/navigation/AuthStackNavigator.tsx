@@ -1,15 +1,16 @@
-import {createStackNavigator} from '@react-navigation/stack';
+import { createStackNavigator } from "@react-navigation/stack";
 
-import WelcomeScreen from '@screens/auth/WelcomeScreen';
-import SignUpStackNavigator from './auth/SignUpStackNavigator';
+import SignUpStackNavigator from "./auth/SignUpStackNavigator";
+
+import WelcomeScreen from "@screens/auth/WelcomeScreen";
 
 const Stack = createStackNavigator();
 
-const AuthStackNavigator = ( ) => {
+const AuthStackNavigator = () => {
   return (
     <Stack.Navigator>
       <Stack.Screen name="welcome" component={WelcomeScreen} />
-      <Stack.Screen name='sign-up' component={SignUpStackNavigator}/>
+      <Stack.Screen name="sign-up" options={{ presentation: "modal" }} component={SignUpStackNavigator} />
     </Stack.Navigator>
   );
 };

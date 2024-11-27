@@ -12,6 +12,7 @@
   "dependencies": {
     "@gorhom/bottom-sheet": "^5.0.5",
     "@miblanchard/react-native-slider": "^2.6.0",
+    "@react-native-community/blur": "^4.4.1",
     "@react-native-community/geolocation": "^3.4.0",
     "@react-native-google-signin/google-signin": "^13.1.0",
     "@react-navigation/bottom-tabs": "^6.6.1",
@@ -25,6 +26,7 @@
     "react-native-dotenv": "^3.4.11",
     "react-native-gesture-handler": "^2.20.2",
     "react-native-mmkv": "^2.12.2",
+    "react-native-otp-entry": "^1.7.3",
     "react-native-reanimated": "^3.16.1",
     "react-native-rename": "^3.2.14",
     "react-native-responsive-fontsize": "^0.5.1",

@@ -1,26 +1,26 @@
-import { useEffect, useRef, useState, Fragment } from 'react';
-import { Button, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useEffect, useRef, useState, Fragment } from "react";
+import { Button, StyleSheet, TouchableOpacity, View } from "react-native";
 
-import Mapbox, { Camera, LocationPuck, MapView, MarkerView, ShapeSource, FillLayer } from '@rnmapbox/maps';
-import type { Position } from '@rnmapbox/maps/lib/typescript/src/types/Position';
+import Mapbox, { Camera, LocationPuck, MapView, MarkerView, ShapeSource, FillLayer } from "@rnmapbox/maps";
+import type { Position } from "@rnmapbox/maps/lib/typescript/src/types/Position";
 
-import { Slider } from '@miblanchard/react-native-slider';
+import { Slider } from "@miblanchard/react-native-slider";
 
-import Geolocation from '@react-native-community/geolocation';
+import Geolocation from "@react-native-community/geolocation";
 
-import { REACT_APP_MAPBOX_ACCESS_TOKEN } from '@env';
+import { REACT_APP_MAPBOX_ACCESS_TOKEN } from "@env";
 
-import * as turf from '@turf/turf'; // Turf.js for generating polygons
-import axios from 'axios';
-import { requestLocationPermission } from '../../../utils/geolocation';
-import { socket } from '../../../services/socketio';
-import { useAuth } from 'src/context/AuthContext';
+import * as turf from "@turf/turf"; // Turf.js for generating polygons
+import axios from "axios";
+import { requestLocationPermission } from "../../../utils/geolocation";
+import { socket } from "../../../services/socketio";
+import { useAuth } from "src/context/AuthContext";
 
 // Test coords
 const IES_COORDS = [76.14814461016903, 10.564417196053261];
 const NGO_QUARTERS = [76.33303251966987, 10.02020933776492];
 // Test user id
-const USER_ID = '66e6fdde8b16924feae61f5f';
+const USER_ID = "66e6fdde8b16924feae61f5f";
 
 Mapbox.setAccessToken(REACT_APP_MAPBOX_ACCESS_TOKEN);
 
@@ -40,7 +40,7 @@ const MapScreen = ({ navigation }: any) => {
       const watchId = Geolocation.watchPosition(
         handlePosition,
         (error: any) => {
-          console.error('Error getting position:', error);
+          console.error("Error getting position:", error);
         },
         {
           enableHighAccuracy: true,
@@ -57,9 +57,9 @@ const MapScreen = ({ navigation }: any) => {
   }, []);
 
   const handlePosition = (position: any) => {
-    console.log('change position', position.coords);
-    socket.emit('user-location', {
-      text: 'hello',
+    console.log("change position", position.coords);
+    socket.emit("user-location", {
+      text: "hello",
       user_id: USER_ID,
       coords: position.coords,
     });
@@ -82,7 +82,7 @@ const MapScreen = ({ navigation }: any) => {
     // Create a polygon (approximating a circle) using Turf.js
     const polygon = turf.circle(coords, radius, {
       steps: 64, // More steps for smoother polygon
-      units: 'meters',
+      units: "meters",
     });
     return polygon;
   };
@@ -96,22 +96,22 @@ const MapScreen = ({ navigation }: any) => {
       polygon, // Store the GeoJSON polygon instead of coords and radius
     };
     try {
-      const response = await axios.post('http://192.168.0.122:3001/events/create', newEvent);
-      console.log('Response', response.data);
+      const response = await axios.post("http://172.20.10.2:3001/events/create", newEvent);
+      console.log("Response", response.data);
     } catch (error: any) {
       console.log(error.message);
     }
-    console.log('newEvent', newEvent);
+    console.log("newEvent", newEvent);
     // setEvents(prevEvents => [...prevEvents, newEvent]);
     // setEventCoords(null);
     // setRadius(100);
   };
 
   const eventDetailsHandler = () => {
-    console.log('Event details');
+    console.log("Event details");
   };
 
-  console.log('eventCoords', eventCoords);
+  console.log("eventCoords", eventCoords);
 
   return (
     <MapView
@@ -122,39 +122,39 @@ const MapScreen = ({ navigation }: any) => {
       scaleBarEnabled={false}
       compassPosition={{ top: 30, right: 10 }}
       styleURL="mapbox://styles/mapbox/light-v11"
-      onMapIdle={(e) => console.log('Region Changed:', e)}
+      onMapIdle={e => console.log("Region Changed:", e)}
       onPress={(e: any) => {
-        if (e.features?.length > 0 && e.geometry) {
-          setEventCoords(e.geometry.coordinates);
-        } else {
-          console.warn('Invalid onPress event payload:', e);
-        }
+        // if (e.features?.length > 0 && e.geometry) {
+        setEventCoords(e.geometry.coordinates);
+        // } else {
+        // console.warn('Invalid onPress event payload:', e);
+        // }
       }}>
       {/* Clear events button */}
-      <TouchableOpacity onPress={() => setEvents([])} style={{ position: 'absolute', top: 65, right: 10, zIndex: 99 }} activeOpacity={0.5}>
+      <TouchableOpacity onPress={() => setEvents([])} style={{ position: "absolute", top: 65, right: 10, zIndex: 99 }} activeOpacity={0.5}>
         <View
           style={{
             width: 44,
             height: 44,
-            backgroundColor: '#788D5D',
+            backgroundColor: "#788D5D",
             borderRadius: 50,
-            justifyContent: 'center',
-            alignItems: 'center',
+            justifyContent: "center",
+            alignItems: "center",
           }}></View>
       </TouchableOpacity>
-      <TouchableOpacity onPress={logout} style={{ position: 'absolute', top: 150, right: 10, zIndex: 99 }} activeOpacity={0.5}>
+      <TouchableOpacity onPress={logout} style={{ position: "absolute", top: 150, right: 10, zIndex: 99 }} activeOpacity={0.5}>
         <View
           style={{
             width: 44,
             height: 44,
-            backgroundColor: '#783D5D',
+            backgroundColor: "#783D5D",
             borderRadius: 50,
-            justifyContent: 'center',
-            alignItems: 'center',
+            justifyContent: "center",
+            alignItems: "center",
           }}></View>
       </TouchableOpacity>
 
-      <Mapbox.Camera ref={cameraRef} zoomLevel={16.2} centerCoordinate={IES_COORDS} animationMode={'flyTo'} pitch={45} heading={35} />
+      <Mapbox.Camera ref={cameraRef} zoomLevel={16.2} centerCoordinate={IES_COORDS} animationMode={"flyTo"} pitch={45} heading={35} />
 
       {events &&
         events.map((event: any, index) => (
@@ -163,12 +163,12 @@ const MapScreen = ({ navigation }: any) => {
             <MarkerView coordinate={turf.center(event.polygon).geometry.coordinates}>
               <TouchableOpacity
                 style={{
-                  backgroundColor: 'gray',
+                  backgroundColor: "gray",
                   borderRadius: 50,
                   height: 20,
                   width: 20,
-                  justifyContent: 'center',
-                  alignItems: 'center',
+                  justifyContent: "center",
+                  alignItems: "center",
                 }}
                 onPress={eventDetailsHandler}
               />
@@ -179,8 +179,8 @@ const MapScreen = ({ navigation }: any) => {
               <FillLayer
                 id={`event-fill-${index}`}
                 style={{
-                  fillColor: 'rgba(0, 150, 255, 0.3)',
-                  fillOutlineColor: 'rgba(0, 150, 255, 1)',
+                  fillColor: "rgba(0, 150, 255, 0.3)",
+                  fillOutlineColor: "rgba(0, 150, 255, 1)",
                 }}
               />
             </ShapeSource>
@@ -193,12 +193,12 @@ const MapScreen = ({ navigation }: any) => {
           <MarkerView coordinate={eventCoords}>
             <TouchableOpacity
               style={{
-                backgroundColor: 'gray',
+                backgroundColor: "gray",
                 borderRadius: 50,
                 height: 20,
                 width: 20,
-                justifyContent: 'center',
-                alignItems: 'center',
+                justifyContent: "center",
+                alignItems: "center",
               }}
             />
           </MarkerView>
@@ -208,8 +208,8 @@ const MapScreen = ({ navigation }: any) => {
             <FillLayer
               id="event-fill-preview"
               style={{
-                fillColor: 'rgba(0, 150, 255, 0.3)',
-                fillOutlineColor: 'rgba(0, 150, 255, 1)',
+                fillColor: "rgba(0, 150, 255, 0.3)",
+                fillOutlineColor: "rgba(0, 150, 255, 1)",
               }}
             />
           </ShapeSource>
@@ -222,7 +222,7 @@ const MapScreen = ({ navigation }: any) => {
         visible={true}
         pulsing={{
           isEnabled: true,
-          color: 'teal',
+          color: "teal",
           radius: 50.0,
         }}
       />
@@ -230,7 +230,7 @@ const MapScreen = ({ navigation }: any) => {
       {eventCoords && (
         <View
           style={{
-            position: 'absolute',
+            position: "absolute",
             bottom: 100,
             left: 10,
             right: 10,

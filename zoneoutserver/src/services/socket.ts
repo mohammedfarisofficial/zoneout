@@ -25,16 +25,16 @@ export const initSocket = (server: HttpServer) => {
          const hash = await geohashEncode(latitude, longitude);
 
          await User.findByIdAndUpdate(user_id, {
-            $set: { location: [longitude, latitude],geohash: hash },
+            $set: { location: [longitude, latitude], geohash: hash },
          });
-         
-         const neighbors = await geohashNeighbors(hash.toString())
+
+         const neighbors = await geohashNeighbors(hash.toString());
 
          const nearbyUsers = await User.find({
             geohash: { $in: [hash, ...neighbors] },
-          });
-          // Send Notification 
-         console.log(nearbyUsers)
+         });
+         // Send Notification
+         console.log(nearbyUsers);
       });
 
       socket.on("disconnect", () => {

@@ -1,5 +1,5 @@
 import React from "react";
-import { RegisteredStyle, Text, TextStyle } from "react-native";
+import { RegisteredStyle, Text, TextStyle, Animated } from "react-native";
 import { useTheme } from "@react-navigation/native";
 import { RFValue } from "react-native-responsive-fontsize";
 
@@ -73,7 +73,7 @@ const Typography: React.FC<Props> = ({
 
   
   return (
-    <Text
+    <Animated.Text
       onLayout={onLayout}
       style={[
         styles.text,
@@ -83,7 +83,7 @@ const Typography: React.FC<Props> = ({
       numberOfLines={numberOfLines !== undefined ? numberOfLines : undefined}
     >
       {children}
-    </Text>
+    </Animated.Text>
   );
 };
 

@@ -24,6 +24,7 @@ module.exports = {
           '@components': './src/components',
           '@services': './src/services',
           '@assets': './src/assets',
+          '@helper': './src/helper',
         },
       },
     ],
