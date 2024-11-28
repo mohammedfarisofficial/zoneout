@@ -1,18 +1,42 @@
-import {View} from 'react-native';
+import { useState } from "react";
+import { View } from "react-native";
+import { useSelector } from "react-redux";
+import DatePicker from "react-native-date-picker";
 
-import Typography from '@components/ui/typography';
-import Button from '@components/ui/button';
+import Typography from "@components/ui/typography";
+import Button from "@components/ui/button";
 
-import * as ROUTES from '@constants/routes';
+import * as ROUTES from "@constants/routes";
 
-const SetDOBScreen = ({ navigation } : any) => {
-  const verifyOTP = () => {
-    navigation.navigate(ROUTES.SIGN_UP, {screen: ROUTES.SIGN_UP_SET_PROFILE});
+import { RootState } from "@store/index";
+import { setDOB } from "@helper/zoneout-api";
+
+const SetDOBScreen = ({ navigation, route }: any) => {
+  const { userId } = route.params || {};
+
+  const [date, setDate] = useState(new Date());
+
+  const { collegeRegion } = useSelector((state: RootState) => state.data);
+
+  const setDOBhandler = async () => {
+    console.log("DOB: ", typeof date);
+    const formData = { userId, dob: date };
+    const { success, error, data } = await setDOB(formData);
+
+    if (error) {
+      console.log("Something went wrong!!");
+      return;
+    }
+    if (success && data) {
+      navigation.navigate(ROUTES.SIGN_UP, { screen: ROUTES.SIGN_UP_SET_PROFILE, params: { userId } });
+    }
   };
+  console.log("collegeRegion from DOB", collegeRegion);
   return (
     <View>
       <Typography>SignUp Screen</Typography>
-      <Button variant="secondary" onPress={verifyOTP} text="Verify" />
+      <DatePicker theme="light" mode="date" date={date} onDateChange={setDate} />
+      <Button variant="secondary" onPress={setDOBhandler} text="Verify" />
     </View>
   );
 };

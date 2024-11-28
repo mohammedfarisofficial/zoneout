@@ -10,7 +10,7 @@ import { NGO_POLYGON } from "../../data";
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-const TEST_OTP = "WERT00";
+const TEST_OTP = "000000";
 
 export const createUser = async (req: Request, res: Response) => {
    try {
@@ -131,6 +131,30 @@ export const checkCollege = async (req: Request, res: Response) => {
       return res
          .status(500)
          .json({ error: "Error creating user", details: (error as Error).message });
+   }
+};
+
+export const setDOB = async (req: Request, res: Response) => {
+   const { dob, userId } = req.body;
+   console.log("setDOB body: ",req.body)
+
+   // Params checking
+   if (!userId || !dob) {
+      return res.status(400).json({
+         error: "Missing required parameters",
+      });
+   }
+   try {
+      const user = await User.findOneAndUpdate({ _id: userId }, { dob }, { new: true });
+      if (!user) {
+         return { status: 400, message: "User not found" };
+      }
+
+      return res.status(200).json({ message: "User updated successfully", user });
+   } catch (error) {
+      return res
+         .status(500)
+         .json({ error: "Error adding user DOB", details: (error as Error).message });
    }
 };
 

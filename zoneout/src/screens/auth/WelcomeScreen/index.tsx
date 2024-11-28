@@ -66,7 +66,7 @@ const WelcomeScreen = ({ navigation }: any) => {
         enablePanDownToClose
         snapPoints={snapPoints}
         ref={bottomSheetRef}
-        index={-1}
+        index={0}
         onChange={handleSheetChanges}>
         <BottomSheetView style={styles.contentContainer}>
           <Typography variant="h4" fontFamily={FONTS.POPPINS_MEDIUM}>

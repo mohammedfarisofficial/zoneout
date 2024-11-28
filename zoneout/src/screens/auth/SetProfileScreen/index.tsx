@@ -21,7 +21,8 @@ const SetProfileScreen = ({ navigation }: any) => {
   return (
     <View>
       <Typography>SignUp Screen</Typography>
-      <Button variant="secondary" onPress={loginHandler} text="Set Profile" />
+      <Button variant="secondary" onPress={()=>{}} text="Set Profile" />
+      <Button variant="secondary" onPress={loginHandler} text="Skip" />
     </View>
   );
 };

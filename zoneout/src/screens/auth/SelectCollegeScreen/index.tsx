@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { View } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { styles } from "./styles";
+import { useDispatch } from "react-redux";
 import Geolocation from "@react-native-community/geolocation";
 
 import Typography from "@components/ui/typography";
@@ -11,7 +12,9 @@ import { requestLocationPermission } from "src/utils/geolocation";
 
 import * as ROUTES from "@constants/routes";
 import { Camera, FillLayer, LocationPuck, MapView, ShapeSource } from "@rnmapbox/maps";
-import { checkCollege } from "../../../helper/zoneout-api";
+import { checkCollege } from "@helper/zoneout-api";
+import { setCurrentCollege } from "../../../store/data/reducer";
+import { useAppDispatch } from "../../../store/index";
 
 const IES_COORDS = [76.14814461016903, 10.564417196053261];
 const NGO_QUARTERS = [76.33303251966987, 10.02020933776492];
@@ -22,6 +25,7 @@ const SelectCollegeScreen = ({ navigation, route }: any) => {
   const [college, setCollege] = useState(null);
 
   const cameraRef = useRef<Camera | null>(null);
+  const dispatch = useAppDispatch();
 
   useFocusEffect(
     useCallback(() => {
@@ -77,7 +81,12 @@ const SelectCollegeScreen = ({ navigation, route }: any) => {
   console.log("college render", college);
 
   const verifyOTP = () => {
-    navigation.navigate(ROUTES.SIGN_UP, { screen: ROUTES.SIGN_UP_SET_DOB });
+    if (college === null) {
+      // Please select college to continue
+      return;
+    }
+    dispatch(setCurrentCollege(college));
+    navigation.navigate(ROUTES.SIGN_UP, { screen: ROUTES.SIGN_UP_SET_DOB, params: { userId } });
   };
   return (
     <View>

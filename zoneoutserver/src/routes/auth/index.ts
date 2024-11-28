@@ -2,7 +2,7 @@ import { Router } from "express";
 
 // import usersRoute from './users';
 import { createUser, loginUser } from "../../controllers";
-import { checkCollege, oauthUser, verifyOTP } from "../../controllers/auth";
+import { checkCollege, oauthUser, setDOB, verifyOTP } from "../../controllers/auth";
 
 export default (app: Router) => {
    const router = Router();
@@ -12,6 +12,7 @@ export default (app: Router) => {
    router.post("/sign-up", createUser);
    router.post("/verify-otp", verifyOTP);
    router.post("/check-collage", checkCollege);
+   router.post("/set-dob", setDOB);
    // Social Login
    router.post("/oauth", oauthUser);
 

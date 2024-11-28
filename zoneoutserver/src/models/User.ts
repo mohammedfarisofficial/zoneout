@@ -27,6 +27,7 @@ const UserSchema: Schema = new Schema({
    },
    otp_code: { type: String, required: false },
    otp_expiry: { type: Date, required: false },
+   dob: Date,
    location: {
       type: {
          type: String,

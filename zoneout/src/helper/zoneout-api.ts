@@ -51,3 +51,16 @@ export const checkCollege = async (data: { userId: string; coords: { lat: number
     return { error: "An unexpected error occurred" };
   }
 };
+
+export const setDOB = async (data: { userId: string; dob: Date }) => {
+  try {
+    const response = await axios.post(SERVER_URL + ENDPOINTS.AUTH_SET_DOB, data);
+    console.log("response.data", response.data);
+    console.log("URL:", SERVER_URL + ENDPOINTS.AUTH_SET_DOB);
+
+    return { success: true, data: response.data };
+  } catch (error) {
+    console.log("Something went wrong!!");
+    return { error: "An unexpected error occurred" };
+  }
+};

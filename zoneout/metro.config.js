@@ -1,7 +1,5 @@
-const {getDefaultConfig, mergeConfig} = require('@react-native/metro-config');
-const {
-    wrapWithReanimatedMetroConfig,
-  } = require('react-native-reanimated/metro-config');
+const { getDefaultConfig, mergeConfig } = require("@react-native/metro-config");
+const { wrapWithReanimatedMetroConfig } = require("react-native-reanimated/metro-config");
 
 /**
  * Metro configuration
@@ -9,6 +7,12 @@ const {
  *
  * @type {import('metro-config').MetroConfig}
  */
-const config = {};
+const defaultConfig = getDefaultConfig(__dirname);
 
-module.exports = wrapWithReanimatedMetroConfig(mergeConfig(getDefaultConfig(__dirname), config))
+// Add '.glb' to the list of asset extensions
+defaultConfig.resolver.assetExts.push("glb");
+
+// Merge the default config with additional custom settings
+const config = mergeConfig(defaultConfig, {});
+
+module.exports = wrapWithReanimatedMetroConfig(config);
