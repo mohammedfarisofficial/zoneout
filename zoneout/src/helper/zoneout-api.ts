@@ -8,6 +8,7 @@ export const signUp = async (data: { email: string; password: string }) => {
   try {
     const response = await axios.post(SERVER_URL + ENDPOINTS.AUTH_SIGNUP, data);
     console.log("URL:", SERVER_URL + ENDPOINTS.AUTH_SIGNUP);
+    console.log("SignUp Response:", response.data);
     return { success: true, data: response.data };
   } catch (error: any) {
     if (error.response) {
@@ -25,7 +26,8 @@ export const verifyOTP = async (data: { userId: string }) => {
   try {
     const response = await axios.post(SERVER_URL + ENDPOINTS.AUTH_VERIFY_OTP, data);
     console.log("URL:", SERVER_URL + ENDPOINTS.AUTH_VERIFY_OTP);
-    return { success: response.data };
+    console.log("verifyOTP Response:", response.data);
+    return { success: true, data: response.data };
   } catch (error: any) {
     if (error.response) {
       if (error.response.status === 400 && error.response.data) {

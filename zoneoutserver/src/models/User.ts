@@ -25,6 +25,7 @@ const UserSchema: Schema = new Schema({
    geohash: {
       type: String,
    },
+   account_progression: { type: Number },
    otp_code: { type: String, required: false },
    otp_expiry: { type: Date, required: false },
    dob: Date,
