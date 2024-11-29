@@ -1,6 +1,21 @@
 import { useEffect, useRef, useState, Fragment, useMemo, useCallback } from "react";
-import { TouchableOpacity, View } from "react-native";
-import Mapbox, { Camera, LocationPuck, MapView, MarkerView, ShapeSource, FillLayer, SymbolLayer, ModelLayer, CircleLayer } from "@rnmapbox/maps";
+import { TouchableOpacity, View, Text, Vibration } from "react-native";
+import Mapbox, {
+  Camera,
+  LocationPuck,
+  MapView,
+  MarkerView,
+  ShapeSource,
+  FillLayer,
+  SymbolLayer,
+  ModelLayer,
+  CircleLayer,
+  ModelLayerStyle,
+  Light,
+  LightLayerStyle,
+  Models,
+  PointAnnotation,
+} from "@rnmapbox/maps";
 import type { Position } from "@rnmapbox/maps/lib/typescript/src/types/Position";
 import axios from "axios";
 import { useSelector } from "react-redux";
@@ -21,17 +36,33 @@ import { useAuth } from "src/context/AuthContext";
 import { RootState } from "@store/index";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import Typography from "@components/ui/typography";
-
-import * as FONTS from "@constants/font";
 import Button from "@components/ui/button";
 
-import { Models } from "@rnmapbox/maps";
-// import Model from "../../../data/3d-models/model.glb"
-const Model = require("../../../data/3d-models/model1.glb");
+import { OnPressEvent } from "@rnmapbox/maps/lib/typescript/src/types/OnPressEvent";
+import ZoneGallery from "@components/map/zone-gallery";
+import { haptic } from "src/utils/haptic";
 
-const modelLayerStyle = {
+import * as ROUTES from "@constants/routes";
+import * as FONTS from "@constants/font";
+
+import ZoneDetailsModal from "@components/modals/ZoneDetailsModal";
+import useSwitch from "src/hooks/useSwitch";
+import UserMarker from "@components/map/user-marker";
+import UserDetailsModal from "@components/modals/UserDetailsModal";
+
+// import LinearGradient from "react-native-linear-gradient";
+// import { BlurView } from "@react-native-community/blur";
+
+const modelLayerStyle: ModelLayerStyle = {
   modelId: "car",
-  modelScale: [10, 10, 10],
+  modelScale: [5, 5, 5],
+  modelTranslation: [0, 0, -1], // Adjust Z-axis to move the model down
+};
+const lightStyle: LightLayerStyle = {
+  anchor: "viewport", // "map" or "viewport"
+  position: [1.5, 90, 80], // [azimuth, altitude, radius]
+  intensity: 0.9, // Light intensity (0-1)
+  color: "green",
 };
 
 // const circleLayerStyle = {
@@ -43,47 +74,6 @@ const modelLayerStyle = {
 const models = {
   car: require("../../../data/3d-models/model.glb"),
 };
-
-// const features = {
-//   type: "FeatureCollection",
-//   features: [
-//     {
-//       type: "Feature",
-//       id: "a-feature",
-//       properties: {
-//         icon: "example",
-//         text: "example-icon-and-label",
-//       },
-//       geometry: {
-//         type: "Point",
-//         coordinates: [-74.00597, 40.71427],
-//       },
-//     },
-//     {
-//       type: "Feature",
-//       id: "b-feature",
-//       properties: {
-//         text: "just-label",
-//       },
-//       geometry: {
-//         type: "Point",
-//         coordinates: [-74.001097, 40.71527],
-//       },
-//     },
-//     {
-//       type: "Feature",
-//       id: "c-feature",
-//       properties: {
-//         icon: "example",
-//       },
-//       geometry: {
-//         type: "Point",
-//         coordinates: [-74.00697, 40.72427],
-//       },
-//     },
-//   ],
-// };
-
 // Test coords
 const features: GeoJSON.FeatureCollection = {
   type: "FeatureCollection",
@@ -91,13 +81,132 @@ const features: GeoJSON.FeatureCollection = {
     {
       type: "Feature",
       id: "a-feature",
-      properties: {
-        icon: "example",
-        text: "example-icon-and-label",
-      },
+      properties: {},
       geometry: {
         type: "Point",
-        coordinates: [-74.00597, 40.71427],
+        coordinates: [76.33303251966987, 10.02020933776492],
+      },
+    },
+    {
+      type: "Feature",
+      id: "b-feature",
+      properties: {},
+      geometry: {
+        coordinates: [76.33286769822325, 10.020785026464779],
+        type: "Point",
+      },
+    },
+    {
+      type: "Feature",
+      id: "c-feature",
+      properties: {},
+      geometry: {
+        coordinates: [76.3323114772403, 10.020374722399794],
+        type: "Point",
+      },
+    },
+    {
+      type: "Feature",
+      id: "d-feature",
+      properties: {},
+      geometry: {
+        coordinates: [76.3320728078744, 10.020693405213521],
+        type: "Point",
+      },
+    },
+    {
+      type: "Feature",
+      id: "e-feature",
+      properties: {},
+      geometry: {
+        coordinates: [76.33279083859748, 10.020189487870894],
+        type: "Point",
+      },
+    },
+    {
+      type: "Feature",
+      id: "f-feature",
+      properties: {},
+      geometry: {
+        coordinates: [76.33197369940831, 10.02016160309401],
+        type: "Point",
+      },
+    },
+  ],
+};
+const users: GeoJSON.FeatureCollection = {
+  type: "FeatureCollection",
+  features: [
+    {
+      type: "Feature",
+      id: "user-1",
+      properties: {},
+      geometry: {
+        coordinates: [76.33271367012276, 10.020696692844794],
+        type: "Point",
+      },
+    },
+    {
+      type: "Feature",
+      id: "user-2",
+      properties: {},
+      geometry: {
+        coordinates: [76.33271367012276, 10.020465489100204],
+        type: "Point",
+      },
+    },
+    {
+      type: "Feature",
+      id: "user-3",
+      properties: {},
+      geometry: {
+        coordinates: [76.33230115011918, 10.020528151813153],
+        type: "Point",
+      },
+    },
+    {
+      type: "Feature",
+      id: "user-4",
+      properties: {},
+      geometry: {
+        coordinates: [76.33245694224814, 10.020178104776733],
+        type: "Point",
+      },
+    },
+    {
+      type: "Feature",
+      id: "user-5",
+      properties: {},
+      geometry: {
+        coordinates: [76.3322133799071, 10.020767998638547],
+        type: "Point",
+      },
+    },
+    {
+      type: "Feature",
+      id: "user-6",
+      properties: {},
+      geometry: {
+        coordinates: [76.33288701629374, 10.020394183238892],
+        type: "Point",
+      },
+    },
+    {
+      type: "Feature",
+      id: "user-7",
+      properties: {},
+      geometry: {
+        coordinates: [76.33303403140167, 10.020258053824548],
+        type: "Point",
+      },
+    },
+    {
+      type: "Feature",
+      id: "user-8",
+      properties: {},
+      geometry: {
+        coordinates: [76.33213219245874, 10.020124085138733],
+        type: "Point",
       },
     },
   ],
@@ -108,6 +217,7 @@ const NGO_QUARTERS = [76.33303251966987, 10.02020933776492];
 const MODEL_COORDS = [-74.00597, 40.71427];
 // Test user id
 const USER_ID = "66e6fdde8b16924feae61f5f";
+const IS_MEMBER = false;
 
 Mapbox.setAccessToken(REACT_APP_MAPBOX_ACCESS_TOKEN);
 
@@ -117,16 +227,41 @@ const MapScreen = ({ navigation }: any) => {
   const [events, setEvents] = useState([]);
   const [selectedPoints, setSelectedPoints] = useState(null);
 
+  const [selectedZoneCoords, setSelectedZoneCoords] = useState({ latitude: 0, longitude: 0 });
+
+  const [annotations, setAnnotations] = useState([]);
+  const [usersMarkers, setUsersMarkers] = useState([]);
+  const [lastPressedId, setLastPressedId] = useState(null);
+
+  const { isActive: isZoneVisible, onStart: visibleZone, onEnd: hideZone } = useSwitch(false);
+  const { isActive: isUsersVisible, onStart: visibleUsers, onEnd: hideUsers } = useSwitch(false);
+
   const { collegeRegion } = useSelector((state: RootState) => state.data);
 
   const cameraRef = useRef<Camera | null>(null);
-  const bottomSheetRef = useRef<BottomSheet>(null);
-
-  console.log(bottomSheetRef.current);
+  const createZoneModalRef = useRef<BottomSheet>(null);
+  const viewZoneModalRef = useRef<BottomSheet>(null);
+  const userDetailsModalRef = useRef<BottomSheet>(null);
 
   const snapPoints = useMemo(() => ["30%"], []); // Create Zone or Map Press
 
   const { logout } = useAuth();
+
+  useEffect(() => {
+    // Convert GeoJSON features to PointAnnotation coordinates
+    const featureAnnotations = features.features.map((feature, index) => ({
+      id: `annotation-${index}`,
+      coordinate: feature.geometry.coordinates,
+    }));
+
+    const formattedUsersMarkers = users.features.map((feature, index) => ({
+      id: `annotation-${index}`,
+      coordinate: feature.geometry.coordinates,
+    }));
+
+    setUsersMarkers(formattedUsersMarkers);
+    setAnnotations(featureAnnotations);
+  }, [features]);
 
   useEffect(() => {
     const startWatchingPosition = async () => {
@@ -154,10 +289,14 @@ const MapScreen = ({ navigation }: any) => {
 
   // Create Zone or Map Press Modal
   const openCreateZoneModal = () => {
-    bottomSheetRef.current?.expand();
+    createZoneModalRef.current?.expand();
   };
+  const viewZoneModal = () => {
+    viewZoneModalRef.current?.expand();
+  };
+
   const handlePosition = (position: any) => {
-    console.log("change position", position.coords);
+    // console.log("change position", position.coords);
     socket.emit("user-location", {
       text: "hello",
       user_id: USER_ID,
@@ -215,7 +354,61 @@ const MapScreen = ({ navigation }: any) => {
     console.log("Event details");
   };
 
-  console.log("eventCoords", eventCoords);
+  const zoneClickHandler = (e: OnPressEvent | any) => {
+    console.log("Model Pressed");
+    const { latitude, longitude } = e.coordinates;
+
+    if (cameraRef.current != null && longitude && latitude) {
+      cameraRef.current.setCamera({
+        centerCoordinate: [longitude, latitude],
+        zoomLevel: 21,
+        animationMode: "linearTo",
+        animationDuration: 500,
+      });
+    }
+  };
+
+  const resetCamera = (coords = NGO_QUARTERS): any => {
+    console.log(coords);
+    if (!cameraRef.current) return;
+    haptic(2);
+    cameraRef.current.setCamera({
+      centerCoordinate: coords,
+      zoomLevel: 19,
+      animationMode: "easeTo",
+      animationDuration: 500,
+      pitch: 45,
+      heading: 35,
+    });
+  };
+
+  const zoneViewHandler = (coordinates: any) => {
+    console.log("View Pressed", coordinates);
+    const offset = -0.0002;
+    if (cameraRef.current != null && coordinates) {
+      const newCoordinates = [coordinates[0], coordinates[1] + offset];
+      setSelectedZoneCoords({ latitude: coordinates[0], longitude: coordinates[1] });
+      cameraRef.current.setCamera({
+        centerCoordinate: newCoordinates,
+        zoomLevel: 21,
+        animationMode: "linearTo",
+        animationDuration: 500,
+        pitch: 60,
+        heading: 360,
+      });
+      haptic(2);
+      viewZoneModalRef.current?.snapToIndex(0);
+    }
+  };
+
+  const onZoneLongPress = () => {
+    haptic(1);
+  };
+
+  const gotoUserDetailsScreen = () => {
+    userDetailsModalRef.current?.close();
+    navigation.navigate(ROUTES.MAIN, { screen: ROUTES.MAIN_ZONE_DETAILS });
+  };
 
   return (
     <View style={styles.container}>
@@ -226,14 +419,14 @@ const MapScreen = ({ navigation }: any) => {
           backgroundStyle={styles.sheetContainer}
           enablePanDownToClose
           snapPoints={snapPoints}
-          ref={bottomSheetRef}
+          ref={createZoneModalRef}
           index={-1}
           onChange={createZoneSheetHandler}>
           <BottomSheetView style={styles.contentContainer}>
             <Button
               onPress={() => {
                 setEventCoords(selectedPoints);
-                bottomSheetRef.current?.close();
+                createZoneModalRef.current?.close();
               }}
               text="Create your Zone"
             />
@@ -241,6 +434,14 @@ const MapScreen = ({ navigation }: any) => {
             <Button onPress={() => {}} text="Report" />
           </BottomSheetView>
         </BottomSheet>
+        {/* Zone Click  */}
+        <ZoneDetailsModal
+          onChange={createZoneSheetHandler}
+          ref={viewZoneModalRef}
+          onClose={() => resetCamera([selectedZoneCoords.latitude, selectedZoneCoords.longitude])}
+          isMember={IS_MEMBER}
+        />
+        <UserDetailsModal ref={userDetailsModalRef} onUserDetails={gotoUserDetailsScreen} onChange={() => {}} onClose={() => {}} />
       </Portal>
 
       {/* Map  */}
@@ -250,10 +451,12 @@ const MapScreen = ({ navigation }: any) => {
         pitchEnabled={true}
         logoEnabled={false}
         scaleBarEnabled={false}
-        compassPosition={{ top: 30, right: 10 }}
-        styleURL="mapbox://styles/mapbox/light-v11"
+        compassPosition={{ top: 60, left: 10 }}
+        // styleURL="mapbox://styles/mohammedfarisofficial1/clfgrkcas000801qxj8qp9reg"
+        styleURL="mapbox://styles/mapbox/dark-v11"
+        // styleURL="mapbox://styles/mapbox/light-v11"
         onMapIdle={e => console.log("Region Changed:", e)}
-        onPress={(e: any) => {
+        onLongPress={(e: any) => {
           if (eventCoords != null) {
             setEventCoords(e.geometry.coordinates);
             return;
@@ -263,40 +466,95 @@ const MapScreen = ({ navigation }: any) => {
         }}>
         {/* Model render experiment  */}
         <Models models={models} />
-        <ShapeSource id={"shape-source-id-0"} shape={features}>
-          {/* <CircleLayer id={"circle-layer"} style={circleLayerStyle} slot={"bottom"} /> */}
+        <ShapeSource onPress={zoneClickHandler} id={"shape-source-id-0"} shape={features}>
           <ModelLayer id="model-layer-id" style={modelLayerStyle} />
         </ShapeSource>
+        {/* Image Gallery */}
+        {isZoneVisible &&
+          annotations.map(annotation => (
+            <MarkerView key={annotation.id} coordinate={annotation.coordinate} allowOverlap={true}>
+              <ZoneGallery onLongPress={onZoneLongPress} onPress={() => zoneViewHandler(annotation.coordinate)} id={annotation.id} />
+            </MarkerView>
+          ))}
+        {/* Users  */}
+        {isUsersVisible &&
+          usersMarkers.map((annotation, index) => (
+            <MarkerView key={annotation.id} coordinate={annotation.coordinate} allowOverlap={true}>
+              {/* <ZoneGallery onLongPress={onZoneLongPress} onPress={() => zoneViewHandler(annotation.coordinate)} id={annotation.id} /> */}
+              <UserMarker index={index} onPress={() => userDetailsModalRef.current?.expand()} />
+            </MarkerView>
+          ))}
+
+        {/* <Light style={lightStyle}  /> */}
         {/* Clear events button */}
-        <TouchableOpacity onPress={() => setEvents([])} style={{ position: "absolute", top: 65, right: 10, zIndex: 99 }} activeOpacity={0.5}>
+        <TouchableOpacity onPress={() => setEvents([])} style={{ position: "absolute", top: 50, right: 10, zIndex: 99 }} activeOpacity={0.5}>
           <View
             style={{
               width: 44,
               height: 44,
-              backgroundColor: "#788D5D",
+              backgroundColor: "gray",
               borderRadius: 50,
               justifyContent: "center",
               alignItems: "center",
             }}></View>
         </TouchableOpacity>
-        <TouchableOpacity onPress={logout} style={{ position: "absolute", top: 150, right: 10, zIndex: 99 }} activeOpacity={0.5}>
+        <TouchableOpacity onPress={logout} style={{ position: "absolute", top: 100, right: 10, zIndex: 99 }} activeOpacity={0.5}>
           <View
             style={{
               width: 44,
               height: 44,
-              backgroundColor: "#783D5D",
+              backgroundColor: "gray",
               borderRadius: 50,
               justifyContent: "center",
               alignItems: "center",
             }}></View>
         </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => (isUsersVisible ? hideUsers() : visibleUsers())}
+          style={{ position: "absolute", top: 150, right: 10, zIndex: 99 }}
+          activeOpacity={0.5}>
+          <View
+            style={{
+              width: 44,
+              height: 44,
+              backgroundColor: "gray",
+              borderRadius: 50,
+              justifyContent: "center",
+              alignItems: "center",
+            }}></View>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => (isZoneVisible ? hideZone() : visibleZone())}
+          style={{ position: "absolute", top: 200, right: 10, zIndex: 99 }}
+          activeOpacity={0.5}>
+          <View
+            style={{
+              width: 44,
+              height: 44,
+              backgroundColor: "gray",
+              borderRadius: 50,
+              justifyContent: "center",
+              alignItems: "center",
+            }}></View>
+        </TouchableOpacity>
+        {/* <TouchableOpacity onPress={logout} style={{ position: "absolute", top: 150, right: 10, zIndex: 99 }} activeOpacity={0.5}>
+          <View
+            style={{
+              width: 44,
+              height: 44,
+              backgroundColor: "gray",
+              borderRadius: 50,
+              justifyContent: "center",
+              alignItems: "center",
+            }}></View>
+        </TouchableOpacity> */}
 
         <Mapbox.Camera
           ref={cameraRef}
           zoomLevel={19}
           // maxZoomLevel={19}
           // minZoomLevel={17.5}
-          centerCoordinate={MODEL_COORDS}
+          centerCoordinate={NGO_QUARTERS}
           animationMode={"easeTo"}
           pitch={45}
           heading={35}

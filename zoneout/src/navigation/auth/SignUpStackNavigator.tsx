@@ -12,7 +12,7 @@ const Stack = createStackNavigator();
 
 const SignUpStackNavigator = () => {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name={ROUTES.SIGN_UP_EMAIL} component={SignUpScreen} />
       <Stack.Screen name={ROUTES.SIGN_UP_OTP} component={OTPScreen} />
       <Stack.Screen name={ROUTES.SIGN_UP_SELECT_COLLEGE} component={SelectCollegeScreen} />
