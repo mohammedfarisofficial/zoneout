@@ -331,18 +331,6 @@ async function generateRefreshTokens(
    access_expiry
 ) {
    try {
-      console.log(
-         "token",
-         token,
-         "refresh_secret",
-         refresh_secret,
-         "refresh_expiry",
-         refresh_expiry,
-         "access_secret,",
-         access_secret,
-         "access_expiry",
-         access_expiry
-      );
       const payload = jwt.verify(token, refresh_secret);
       const user = await User.findById(payload.userId);
       if (!user) {

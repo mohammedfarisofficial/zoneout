@@ -37,6 +37,7 @@ const UserDetailsModal = forwardRef<BottomSheet, Props>(({ onChange, onClose, on
         <BottomSheetView style={styles.contentContainer}>
           <Typography>User Profile</Typography>
           <Typography>Email : {userData?.email}</Typography>
+          <Typography>ID : {userData?._id}</Typography>
           <View style={styles.innerContainer}>
             <FastImage style={{ width: "100%", height: "100%" }} source={{ uri: TEST_IMAGE_URL }} resizeMode={FastImage.resizeMode.cover} />
           </View>

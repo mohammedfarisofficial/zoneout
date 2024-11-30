@@ -252,15 +252,13 @@ const MapScreen = ({ navigation }: any) => {
   const createZoneModalRef = useRef<BottomSheet>(null);
   const viewZoneModalRef = useRef<BottomSheet>(null);
   const userDetailsModalRef = useRef<BottomSheet>(null);
+  const watchIdRef = useRef<number | null>(null);
 
   const snapPoints = useMemo(() => ["30%"], []); // Create Zone or Map Press
 
   const dispatch = useAppDispatch();
 
-  console.log("Connections", authUser?.connections);
-
   useEffect(() => {
-    // Convert GeoJSON features to PointAnnotation coordinates
     const featureAnnotations = features.features.map((feature, index) => ({
       id: `annotation-${index}`,
       coordinate: feature.geometry.coordinates,
@@ -275,10 +273,6 @@ const MapScreen = ({ navigation }: any) => {
     setAnnotations(featureAnnotations);
   }, [features]);
 
-  // useEffect(() => {
-  //   getAllEvent();
-  // }, []);
-
   useEffect(() => {
     (async () => {
       const hasLocationPermission = await requestLocationPermission();
@@ -291,13 +285,17 @@ const MapScreen = ({ navigation }: any) => {
         },
         {
           enableHighAccuracy: true,
-          distanceFilter: 10, // meters
+          distanceFilter: 0, // meters
         },
       );
-      return () => {
-        Geolocation.clearWatch(watchId);
-      };
+
+      watchIdRef.current = watchId;
     })();
+    return () => {
+      if (watchIdRef.current !== null) {
+        Geolocation.clearWatch(watchIdRef.current);
+      }
+    };
   }, []);
 
   const updateUserPosition = (position: any) => {
@@ -360,7 +358,7 @@ const MapScreen = ({ navigation }: any) => {
     const polygon = createEventPolygon(eventCoords, radius);
 
     const newEvent = {
-      created_by: USER_ID,
+      created_by: authUser?._id,
       coords: eventCoords,
       polygon, // Store the GeoJSON polygon instead of coords and radius
     };
@@ -472,7 +470,10 @@ const MapScreen = ({ navigation }: any) => {
           ref={userDetailsModalRef}
           onUserDetails={gotoUserDetailsScreen}
           onChange={() => {}}
-          onClose={() => setSelectedUser(null)}
+          onClose={() => {
+            if (selectedUser) resetCamera(selectedUser.location);
+            setSelectedUser(null);
+          }}
         />
       </Portal>
 
@@ -527,6 +528,14 @@ const MapScreen = ({ navigation }: any) => {
                     text={connection.email}
                     index={index}
                     onPress={() => {
+                      if (cameraRef.current) {
+                        cameraRef.current.setCamera({
+                          zoomLevel: 21,
+                          animationMode: "easeTo",
+                          animationDuration: 300,
+                          centerCoordinate: connection.location,
+                        });
+                      }
                       setSelectedUser(connection);
                       userDetailsModalRef.current?.expand();
                     }}

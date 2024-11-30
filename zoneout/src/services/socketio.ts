@@ -6,7 +6,7 @@ let isManuallyClosed = false;
 const reconnectInterval = 5000; // Retry every 5 seconds
 let reconnectTimeout: NodeJS.Timeout | null = null;
 
-const connectWebSocket = () => {
+export const connectWebSocket = () => {
   console.log("Connecting to WebSocket...");
 
   if (!WEBSOCKET_URL) {

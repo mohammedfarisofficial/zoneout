@@ -2,7 +2,7 @@ import { Schema, Document, model, Types } from "mongoose";
 import jwt from "jsonwebtoken";
 
 // Define the User Document interface
-interface IUserDocument extends Document {
+export interface IUserDocument extends Document {
    username: string;
    email: string;
    password?: string;

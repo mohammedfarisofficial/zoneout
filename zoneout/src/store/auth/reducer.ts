@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-interface Connection {
+export interface Connection {
   _id: string;
   email: string;
   location: [number, number];

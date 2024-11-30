@@ -5,13 +5,18 @@ import { geohashEncode, geohashNeighbors } from "../utils/geohash";
 import User from "../models/User";
 
 import * as SOCKET_EVENTS from "../constants/socket-event";
+import { randomUUID } from "crypto";
 
 let wss: WebSocketServer;
+const connections: { [socketId: string]: WebSocket } = {};
 
 export const initSocket = (server: ReturnType<typeof createServer>) => {
    wss = new WebSocketServer({ server });
    wss.on("connection", (ws) => {
-      console.log("A user connected");
+      const socket_id = randomUUID();
+      ws.id = socket_id;
+      connections[socket_id] = ws;
+      console.log("A user connected", ws.id);
       ws.on("message", async (message) => {
          try {
             const data = JSON.parse(message.toString());
@@ -21,24 +26,36 @@ export const initSocket = (server: ReturnType<typeof createServer>) => {
                const { user_id, coords } = payload;
                const { latitude, longitude } = coords;
 
-               console.log("user_id, coords", user_id, coords);
+               console.log("User location update : ", user_id, coords);
+
                // Generate geohash
                const hash = await geohashEncode(latitude, longitude);
                await User.findByIdAndUpdate(user_id, {
-                  $set: { location: [longitude, latitude], geohash: hash },
+                  $set: { location: [longitude, latitude], geohash: hash, socket_id: ws.id },
                });
 
-               // const neighbors = await geohashNeighbors(hash.toString());
+               const user = await User.findById(user_id).populate("connections");
 
-               // const nearbyUsers = await User.find({
-               //    geohash: { $in: [hash, ...neighbors] },
-               // });
+               if (!user.connections || user.connections.length === 0) {
+                  console.log("No Connections!!");
+                  return;
+               }
 
-               // Send notification back to the client
-               // console.log("nearbyUsers",nearbyUsers)
-               // if (nearbyUsers.length) {
-               //    ws.send(JSON.stringify({ event: "nearby-users", data: nearbyUsers }));
-               // }
+               // Broadcast to connections
+               user.connections.forEach((connection: any) => {
+                  if (!connection.socket_id) {
+                     return;
+                  }
+                  const targetSocket = connections[connection?.socket_id];
+                  if (targetSocket) {
+                     targetSocket.send(
+                        JSON.stringify({
+                           event: SOCKET_EVENTS.CONNECTION_LOCATION_UPDATE,
+                           data: { user_id, latitude, longitude },
+                        })
+                     );
+                  }
+               });
             }
          } catch (error) {
             console.error("Error handling message:", error);
@@ -47,7 +64,8 @@ export const initSocket = (server: ReturnType<typeof createServer>) => {
 
       // Handle disconnection
       ws.on("close", () => {
-         console.log("User disconnected");
+         console.log("User disconnected", ws.id);
+         delete connections[ws.id];
       });
    });
 
