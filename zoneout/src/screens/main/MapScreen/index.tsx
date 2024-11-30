@@ -363,7 +363,7 @@ const MapScreen = ({ navigation }: any) => {
         centerCoordinate: [longitude, latitude],
         zoomLevel: 21,
         animationMode: "linearTo",
-        animationDuration: 500,
+        animationDuration: 100,
       });
     }
   };
@@ -389,12 +389,12 @@ const MapScreen = ({ navigation }: any) => {
       const newCoordinates = [coordinates[0], coordinates[1] + offset];
       setSelectedZoneCoords({ latitude: coordinates[0], longitude: coordinates[1] });
       cameraRef.current.setCamera({
-        centerCoordinate: newCoordinates,
         zoomLevel: 21,
         animationMode: "linearTo",
-        animationDuration: 500,
+        animationDuration: 100,
         pitch: 60,
         heading: 360,
+        centerCoordinate: newCoordinates,
       });
       haptic(2);
       viewZoneModalRef.current?.snapToIndex(0);

@@ -11,6 +11,7 @@ import { AuthProvider, useAuth } from "src/context/AuthContext";
 
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { store } from "./src/store/index";
+import Loader from "@components/ui/loader";
 
 LogBox.ignoreLogs(["Sending `onAnimatedValueUpdate` with no listeners registered."]);
 
@@ -41,6 +42,7 @@ const App = () => (
       <AuthProvider>
         <PortalProvider>
           <NavigationContainer>
+            <Loader />
             <AppContent />
           </NavigationContainer>
         </PortalProvider>

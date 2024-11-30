@@ -126,7 +126,7 @@ export const verifyOTP = async (req: Request, res: Response) => {
    }
 
    // Check expiration
-   const otpExpiryDate = new Date(user.otp_expiry as string);
+   const otpExpiryDate = new Date(user.otp_expiry);
 
    if (!user.otp_code || new Date() > otpExpiryDate) {
       return res.status(400).json({
@@ -147,10 +147,14 @@ export const verifyOTP = async (req: Request, res: Response) => {
          delete loggedUser.otp_code;
          delete loggedUser.otp_expiry;
 
+         const access_token = user.createAccessToken();
+         const refresh_token = user.createRefreshToken();
+
          return res.status(200).json({
             message: "Account already exist!",
             user: loggedUser,
             account_status: VERIFIED_ACCOUNT,
+            tokens: { access_token, refresh_token },
          });
       } else {
          await User.findByIdAndUpdate(userId, { account_progression: OTP_COMPLETED });
@@ -253,14 +257,16 @@ export const oauthUser = async (req: Request, res: Response) => {
       // Check Already exiting account
       const existingAccount = await User.findOne({ email });
       if (existingAccount) {
-         console.log("trigger")
          if (existingAccount.signin_method === SIGNIN_WITH_GOOGLE) {
-            console.log("trigger 1")
             const existingUser = existingAccount.toObject();
+            const access_token = existingAccount.createAccessToken();
+            const refresh_token = existingAccount.createRefreshToken();
+
             return res.status(200).json({
                message: "Account already exist!",
                user: existingUser,
                account_status: VERIFIED_ACCOUNT,
+               tokens: { access_token, refresh_token },
             });
          } else {
             return res.status(400).json({

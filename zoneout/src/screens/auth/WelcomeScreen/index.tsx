@@ -16,12 +16,15 @@ import { signInWithGoogle as signInWithGoogleHelper } from "@helper/zoneout-api"
 import { ACCOUNT_CREATED, NO_ACCOUNT, SELECT_DOB_COMPLETED, VERIFIED_ACCOUNT } from "@constants/account-status";
 import { appStorage } from "@services/mmkv-storage";
 import { useAuth } from "src/context/AuthContext";
+import { useAppDispatch } from "@store/index";
+import { startLoading, stopLoading } from "@store/ui/reducer";
 
 const WelcomeScreen = ({ navigation }: any) => {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ["40%"], []);
 
   const { setIsLogged } = useAuth();
+  const dispatch = useAppDispatch();
 
   const handleSheetChanges = useCallback((index: number) => {
     console.log("handleSheetChanges", index);
@@ -43,6 +46,7 @@ const WelcomeScreen = ({ navigation }: any) => {
           provider: "google",
           id_token: response.data.idToken,
         };
+        dispatch(startLoading());
         const { error, success, data } = await signInWithGoogleHelper(formData);
         if (success && data) {
           console.log("Data : ", data);
@@ -83,6 +87,8 @@ const WelcomeScreen = ({ navigation }: any) => {
         // an error that's not related to google sign in occurred
         console.error("API call failed:", error);
       }
+    } finally {
+      dispatch(stopLoading());
     }
   };
 

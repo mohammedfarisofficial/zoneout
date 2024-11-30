@@ -11,6 +11,8 @@ import { verifyOTP } from "../../../helper/zoneout-api";
 import { useLayoutEffect, useState } from "react";
 import { useAuth } from "src/context/AuthContext";
 import { appStorage } from "@services/mmkv-storage";
+import { useAppDispatch } from "@store/index";
+import { startLoading, stopLoading } from "@store/ui/reducer";
 
 const OTPScreen = ({ navigation, route }: any) => {
   const { userId } = route.params || {};
@@ -18,6 +20,7 @@ const OTPScreen = ({ navigation, route }: any) => {
   const [otpCode, setOtpCode] = useState<string>("");
 
   const { setIsLogged } = useAuth();
+  const dispatch = useAppDispatch();
 
   useLayoutEffect(() => {
     if (!userId) {
@@ -27,37 +30,42 @@ const OTPScreen = ({ navigation, route }: any) => {
 
   const verifyOTPHandler = async () => {
     // Keyboard.dismiss();
-    const formData = { userId, otp_code: otpCode };
-    const { error, success, data } = await verifyOTP(formData);
+    try {
+      const formData = { userId, otp_code: otpCode };
+      dispatch(startLoading());
+      const { error, success, data } = await verifyOTP(formData);
 
-    if (error) {
-      console.log("Response", error);
-    } else if (success) {
-      Keyboard.dismiss();
-      console.log("data=======", data);
-      switch (data.account_status) {
-        case AC_STATUS.VERIFIED_ACCOUNT:
-          // SignIn
-          try {
-            navigation.reset({
-              index: 0,
-              routes: [{ name: ROUTES.AUTH_WELCOME }],
-            });
-            appStorage.setItem("isLogged", "true");
-            setIsLogged(true);
-          } catch (error) {
-            console.error("Error during login:", error);
-          }
-          break;
-        case AC_STATUS.NO_ACCOUNT:
-          navigation.navigate(ROUTES.SIGN_UP, { screen: ROUTES.SIGN_UP_SELECT_COLLEGE, params: { userId } });
-          break;
-        default:
-          break;
+      if (error) {
+        console.log("Response", error);
+      } else if (success) {
+        Keyboard.dismiss();
+        console.log("data=======", data);
+        switch (data.account_status) {
+          case AC_STATUS.VERIFIED_ACCOUNT:
+            // SignIn
+            try {
+              navigation.reset({
+                index: 0,
+                routes: [{ name: ROUTES.AUTH_WELCOME }],
+              });
+              appStorage.setItem("isLogged", "true");
+              setIsLogged(true);
+            } catch (error) {
+              console.error("Error during login:", error);
+            }
+            break;
+          case AC_STATUS.NO_ACCOUNT:
+            navigation.navigate(ROUTES.SIGN_UP, { screen: ROUTES.SIGN_UP_SELECT_COLLEGE, params: { userId } });
+            break;
+          default:
+            break;
+        }
       }
+    } catch (error) {
+      console.log("Something went wrong!", error);
+    } finally {
+      dispatch(stopLoading());
     }
-
-    return;
   };
   return (
     <View>

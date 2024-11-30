@@ -3,10 +3,17 @@ import { createSlice } from "@reduxjs/toolkit";
 const uiSlice = createSlice({
   name: "uiSlice",
   initialState: {
-    user: null,
+    loading: false,
   },
-  reducers: {},
+  reducers: {
+    startLoading: state => {
+      state.loading = true;
+    },
+    stopLoading: state => {
+      state.loading = false;
+    },
+  },
 });
 
-export const {} = uiSlice.actions;
+export const { startLoading, stopLoading } = uiSlice.actions;
 export default uiSlice.reducer;

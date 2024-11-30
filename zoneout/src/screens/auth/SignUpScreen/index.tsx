@@ -8,22 +8,33 @@ import Typography from "@components/ui/typography";
 import * as ROUTES from "@constants/routes";
 
 import { signUp } from "../../../helper/zoneout-api";
+import { useAppDispatch } from "@store/index";
+import { startLoading, stopLoading } from "@store/ui/reducer";
 
 const SignUpScreen = ({ navigation }: any) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const verifyEmail = async () => {
-    console.log(email, password);
-    const formData = { email, password };
-    const { success, error, data } = await signUp(formData);
+  const dispatch = useAppDispatch();
 
-    if (error && error.type === 2) {
-      console.log("Response", error);
-    } else if (success) {
-      Keyboard.dismiss();
-      navigation.navigate(ROUTES.SIGN_UP, { screen: ROUTES.SIGN_UP_OTP, params: { userId: data.user._id } });
-      console.log("Success", success);
+  const verifyEmail = async () => {
+    try {
+      console.log(email, password);
+      const formData = { email, password };
+      dispatch(startLoading());
+      const { success, error, data } = await signUp(formData);
+
+      if (error && error.type === 2) {
+        console.log("Response", error);
+      } else if (success) {
+        Keyboard.dismiss();
+        navigation.navigate(ROUTES.SIGN_UP, { screen: ROUTES.SIGN_UP_OTP, params: { userId: data.user._id } });
+        console.log("Success", success);
+      }
+    } catch (error) {
+      console.log("Something went wrong!", error);
+    } finally {
+      dispatch(stopLoading());
     }
   };
   return (
