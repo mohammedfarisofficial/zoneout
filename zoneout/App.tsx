@@ -1,17 +1,21 @@
 // src/App.tsx
-import { Provider } from "react-redux";
+import { Provider, useSelector } from "react-redux";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { NavigationContainer } from "@react-navigation/native";
-import { ActivityIndicator, View, LogBox } from "react-native";
+import { LogBox } from "react-native";
 import { PortalProvider } from "@gorhom/portal";
 
 import AuthStackNavigator from "src/navigation/AuthStackNavigator";
 import MainBottomTabNavigator from "src/navigation/main/MainBottomTabNavigator";
-import { AuthProvider, useAuth } from "src/context/AuthContext";
 
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import { store } from "./src/store/index";
+import { RootState, store } from "@store/index";
 import Loader from "@components/ui/loader";
+import { useEffect } from "react";
+import { appStorage } from "@services/mmkv-storage";
+import { setLogged } from "@store/auth/reducer";
+import { handleLogout } from "@store/auth/action";
+import { getUserDetails } from "@helper/zoneout-api";
 
 LogBox.ignoreLogs(["Sending `onAnimatedValueUpdate` with no listeners registered."]);
 
@@ -22,31 +26,39 @@ GoogleSignin.configure({
 });
 
 const AppContent = () => {
-  const { isLogged } = useAuth();
+  const { isLogged } = useSelector((state: RootState) => state.auth);
 
-  // Show loading indicator while checking login state
-  if (isLogged === null) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color="#0000ff" />
-      </View>
-    );
-  }
-
+  // Fetch User Details
+  useEffect(() => {
+    (async () => {
+      const loggedStatus = appStorage.getItem("isLogged");
+      if (loggedStatus) {
+        const { error, success, data } = await getUserDetails();
+        if (error) {
+          handleLogout();
+          return;
+        }
+        if (success && data) {
+          console.log("User Details :", data.user);
+          store.dispatch(setLogged(data.user));
+        }
+      } else {
+        handleLogout();
+      }
+    })();
+  }, []);
   return isLogged ? <MainBottomTabNavigator /> : <AuthStackNavigator />;
 };
 
 const App = () => (
   <GestureHandlerRootView style={{ flex: 1 }}>
     <Provider store={store}>
-      <AuthProvider>
-        <PortalProvider>
-          <NavigationContainer>
-            <Loader />
-            <AppContent />
-          </NavigationContainer>
-        </PortalProvider>
-      </AuthProvider>
+      <PortalProvider>
+        <NavigationContainer>
+          <Loader />
+          <AppContent />
+        </NavigationContainer>
+      </PortalProvider>
     </Provider>
   </GestureHandlerRootView>
 );

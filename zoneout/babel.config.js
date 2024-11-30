@@ -28,6 +28,7 @@ module.exports = {
           '@store': './src/store',
           '@hooks': './src/hooks',
           '@navigation': './src/navigation',
+          '@hoc': './src/hoc',
         },
       },
     ],

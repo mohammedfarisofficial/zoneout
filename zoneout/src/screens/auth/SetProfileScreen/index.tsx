@@ -5,9 +5,13 @@ import Button from "@components/ui/button";
 import { useAuth } from "src/context/AuthContext";
 import * as ROUTES from "@constants/routes";
 import { appStorage } from "@services/mmkv-storage";
+import { setLogged } from "@store/auth/reducer";
+import { useAppDispatch } from "@store/index";
 
 const SetProfileScreen = ({ navigation }: any) => {
-  const { setIsLogged } = useAuth();
+  // const { setIsLogged } = useAuth();
+
+  const dispatch = useAppDispatch()
 
   const loginHandler = async () => {
     try {
@@ -16,7 +20,8 @@ const SetProfileScreen = ({ navigation }: any) => {
         routes: [{ name: ROUTES.AUTH_WELCOME }],
       });
       appStorage.setItem("isLogged", "true");
-      setIsLogged(true);
+      // setIsLogged(true);
+      dispatch(setLogged({}));
     } catch (error) {
       console.error("Error during login:", error);
     }

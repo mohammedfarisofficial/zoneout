@@ -1,4 +1,4 @@
-import { Schema, Document, model } from "mongoose";
+import { Schema, Document, model, Types } from "mongoose";
 import jwt from "jsonwebtoken";
 
 // Define the User Document interface
@@ -6,6 +6,7 @@ interface IUserDocument extends Document {
    username: string;
    email: string;
    password?: string;
+   profile_picture?: string;
    socket_id?: string;
    geohash?: string;
    signin_method: number;
@@ -19,6 +20,10 @@ interface IUserDocument extends Document {
       type: string;
       coordinates: [number, number];
    };
+   // Connection
+   sent_requests: Types.ObjectId[];
+   received_requests: Types.ObjectId[];
+   connections: Types.ObjectId[];
    createAccessToken(): string;
    createRefreshToken(): string;
 }
@@ -28,6 +33,7 @@ const UserSchema: Schema<IUserDocument> = new Schema({
    username: { type: String, unique: true },
    email: { type: String, required: true, unique: true },
    password: { type: String },
+   profile_picture: { type: String },
    socket_id: { type: String },
    geohash: { type: String },
    signin_method: { type: Number, default: 0 },
@@ -46,6 +52,10 @@ const UserSchema: Schema<IUserDocument> = new Schema({
          type: [Number],
       },
    },
+   // Connections
+   sent_requests: [{ type: Schema.Types.ObjectId, ref: "User" }],
+   received_requests: [{ type: Schema.Types.ObjectId, ref: "User" }],
+   connections: [{ type: Schema.Types.ObjectId, ref: "User" }],
 });
 
 // Index for geospatial queries

@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { OAuth2Client } from "google-auth-library";
+import jwt from "jsonwebtoken";
 
 import User from "../../models/User";
 
@@ -289,5 +290,104 @@ export const oauthUser = async (req: Request, res: Response) => {
          user,
          account_status: NO_ACCOUNT,
       });
+   }
+};
+
+export const refreshToken = async (req: Request, res: Response) => {
+   console.log("Hit");
+   const { refresh_token } = req.body;
+   if (!refresh_token) {
+      // Params checking
+      return res.status(400).json({
+         error: "Missing required parameters",
+      });
+   }
+   try {
+      let accessToken, newRefreshToken;
+
+      ({ accessToken, newRefreshToken } = await generateRefreshTokens(
+         refresh_token,
+         process.env.REFRESH_TOKEN_SECRET,
+         process.env.REFRESH_TOKEN_EXPIRY,
+         process.env.JWT_SECRET,
+         process.env.ACCESS_TOKEN_EXPIRY
+      ));
+
+      res.status(200).json({
+         access_token: accessToken,
+         refresh_token: newRefreshToken,
+      });
+   } catch (error) {
+      console.error(error);
+      res.status(401).json({ message: "Invalid or expired token" });
+   }
+};
+
+async function generateRefreshTokens(
+   token,
+   refresh_secret,
+   refresh_expiry,
+   access_secret,
+   access_expiry
+) {
+   try {
+      console.log(
+         "token",
+         token,
+         "refresh_secret",
+         refresh_secret,
+         "refresh_expiry",
+         refresh_expiry,
+         "access_secret,",
+         access_secret,
+         "access_expiry",
+         access_expiry
+      );
+      const payload = jwt.verify(token, refresh_secret);
+      const user = await User.findById(payload.userId);
+      if (!user) {
+         console.log("User not found!");
+         // res.status(401).json({ message: "Invalid or expired token" });
+      }
+
+      const accessToken = await jwt.sign({ userId: user.id }, access_secret, {
+         expiresIn: access_expiry,
+      });
+
+      const newRefreshToken = await jwt.sign({ userId: user.id }, refresh_secret, {
+         expiresIn: refresh_expiry,
+      });
+
+      return { accessToken, newRefreshToken };
+   } catch (error) {
+      console.error(error);
+      console.log("Invalid or expired token");
+      // throw new UnauthenticatedError("Invalid or expired token");
+   }
+}
+
+export const getUserDetails = async (req: Request, res: Response) => {
+   const { userId } = req.user;
+
+   // Params checking
+   if (!userId) {
+      return res.status(400).json({
+         error: "Missing required parameters",
+      });
+   }
+   try {
+      const user = await User.findById(userId).populate("connections", "email location");
+      const formattedUser = user.toObject();
+      // Remove sensitive data
+      delete formattedUser.password;
+      delete formattedUser.otp_code;
+      delete formattedUser.otp_expiry;
+      delete formattedUser.dob;
+
+      res.status(200).json({ user: formattedUser });
+   } catch (error: unknown) {
+      return res
+         .status(500)
+         .json({ error: "Error fetching user", details: (error as Error).message });
    }
 };

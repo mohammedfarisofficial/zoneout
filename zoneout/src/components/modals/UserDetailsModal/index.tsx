@@ -11,14 +11,16 @@ import Typography from "@components/ui/typography";
 import { TEST_IMAGE_URL } from "@components/map/user-marker";
 
 import * as ROUTES from "@constants/routes";
+import { Connection } from "@store/auth/reducer";
 
 interface Props {
   onChange: (index: number) => void;
   onClose: () => void;
   onUserDetails: () => void;
+  userData: Connection | null;
 }
 
-const UserDetailsModal = forwardRef<BottomSheet, Props>(({ onChange, onClose, onUserDetails }, ref) => {
+const UserDetailsModal = forwardRef<BottomSheet, Props>(({ onChange, onClose, onUserDetails, userData }, ref) => {
   const snapPoints = useMemo(() => ["30%"], []);
 
   return (
@@ -34,6 +36,7 @@ const UserDetailsModal = forwardRef<BottomSheet, Props>(({ onChange, onClose, on
       <SafeAreaView style={{ flex: 1 }}>
         <BottomSheetView style={styles.contentContainer}>
           <Typography>User Profile</Typography>
+          <Typography>Email : {userData?.email}</Typography>
           <View style={styles.innerContainer}>
             <FastImage style={{ width: "100%", height: "100%" }} source={{ uri: TEST_IMAGE_URL }} resizeMode={FastImage.resizeMode.cover} />
           </View>

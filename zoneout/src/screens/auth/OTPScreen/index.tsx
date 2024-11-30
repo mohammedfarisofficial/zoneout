@@ -10,16 +10,17 @@ import * as AC_STATUS from "@constants/account-status";
 import { verifyOTP } from "../../../helper/zoneout-api";
 import { useLayoutEffect, useState } from "react";
 import { useAuth } from "src/context/AuthContext";
-import { appStorage } from "@services/mmkv-storage";
+import { appStorage, tokenStorage } from "@services/mmkv-storage";
 import { useAppDispatch } from "@store/index";
 import { startLoading, stopLoading } from "@store/ui/reducer";
+import { setLogged } from "@store/auth/reducer";
 
 const OTPScreen = ({ navigation, route }: any) => {
   const { userId } = route.params || {};
 
   const [otpCode, setOtpCode] = useState<string>("");
 
-  const { setIsLogged } = useAuth();
+  // const { setIsLogged } = useAuth();
   const dispatch = useAppDispatch();
 
   useLayoutEffect(() => {
@@ -44,12 +45,22 @@ const OTPScreen = ({ navigation, route }: any) => {
           case AC_STATUS.VERIFIED_ACCOUNT:
             // SignIn
             try {
+              console.log("data", data);
               navigation.reset({
                 index: 0,
                 routes: [{ name: ROUTES.AUTH_WELCOME }],
               });
+              const {
+                tokens: { access_token, refresh_token },
+              } = data;
+              if (!access_token || !refresh_token) {
+                return;
+              }
+              tokenStorage.set("access_token", access_token);
+              tokenStorage.set("refresh_token", refresh_token);
+
               appStorage.setItem("isLogged", "true");
-              setIsLogged(true);
+              dispatch(setLogged(data.user));
             } catch (error) {
               console.error("Error during login:", error);
             }
@@ -70,7 +81,7 @@ const OTPScreen = ({ navigation, route }: any) => {
   return (
     <View>
       <Typography>SignUp OTP Screen</Typography>
-      <OtpInput numberOfDigits={6} type="alphanumeric" onTextChange={text => setOtpCode(text)} />
+      <OtpInput autoFocus numberOfDigits={6} type="alphanumeric" onTextChange={text => setOtpCode(text)} />
       <Button variant="secondary" onPress={verifyOTPHandler} text="Verify" />
     </View>
   );

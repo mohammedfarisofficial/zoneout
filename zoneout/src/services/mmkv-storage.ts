@@ -1,15 +1,15 @@
-import { MMKV } from 'react-native-mmkv';
+import { MMKV } from "react-native-mmkv";
 
 // Secret Storage
 export const tokenStorage = new MMKV({
   id: `token-storage`,
-  encryptionKey: 'hunter2123123123',
+  encryptionKey: "hunter2123123123",
 });
 
 // App Storage
 export const storage = new MMKV({
   id: `zoneout-storage`,
-  encryptionKey: 'hunter2123123123',
+  encryptionKey: "hunter2123123123",
 });
 
 export const appStorage = {
@@ -22,5 +22,8 @@ export const appStorage = {
   },
   removeItem: (key: string) => {
     storage.delete(key);
+  },
+  clearAll: () => {
+    storage.clearAll();
   },
 };

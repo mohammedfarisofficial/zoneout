@@ -1,6 +1,7 @@
 export const AUTH                               = "auth"
 export const MAIN                               = "main"
 export const CHAT                               = "chat"
+export const ACCOUNT                            = "account"
 
 export const AUTH_WELCOME                       = "welcome"
 

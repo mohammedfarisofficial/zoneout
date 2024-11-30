@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, Fragment, useMemo, useCallback } from "react";
-import { TouchableOpacity, View, Text, Vibration } from "react-native";
+import { TouchableOpacity, View, Image as RNImage } from "react-native";
 import Mapbox, {
   Camera,
   LocationPuck,
@@ -15,12 +15,14 @@ import Mapbox, {
   LightLayerStyle,
   Models,
   PointAnnotation,
+  Images,
+  Image,
 } from "@rnmapbox/maps";
 import type { Position } from "@rnmapbox/maps/lib/typescript/src/types/Position";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { Portal } from "@gorhom/portal";
-import * as turf from "@turf/turf"; // Turf.js for generating polygons
+import * as turf from "@turf/turf";
 import { styles } from "./styles";
 
 import { Slider } from "@miblanchard/react-native-slider";
@@ -30,10 +32,10 @@ import Geolocation from "@react-native-community/geolocation";
 import { REACT_APP_MAPBOX_ACCESS_TOKEN } from "@env";
 
 import { requestLocationPermission } from "../../../utils/geolocation";
-import { socket } from "@services/socketio";
+import { sendMessage } from "@services/socketio";
 import { useAuth } from "src/context/AuthContext";
 
-import { RootState } from "@store/index";
+import { RootState, useAppDispatch } from "@store/index";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import Typography from "@components/ui/typography";
 import Button from "@components/ui/button";
@@ -44,11 +46,18 @@ import { haptic } from "src/utils/haptic";
 
 import * as ROUTES from "@constants/routes";
 import * as FONTS from "@constants/font";
+import * as SOCKET_EVENTS from "@constants/socket-event";
 
 import ZoneDetailsModal from "@components/modals/ZoneDetailsModal";
-import useSwitch from "src/hooks/useSwitch";
-import UserMarker from "@components/map/user-marker";
+import useSwitch from "@hooks/useSwitch";
+import UserMarker, { TEST_IMAGE_URL } from "@components/map/user-marker";
 import UserDetailsModal from "@components/modals/UserDetailsModal";
+import { getAllEvent } from "@helper/zoneout-api";
+import { Connection, logout } from "@store/auth/reducer";
+import { handleLogout } from "@store/auth/action";
+import withAuth from "src/hoc/withAuth";
+import { Avatar } from "@constants/images";
+import FastImage from "react-native-fast-image";
 
 // import LinearGradient from "react-native-linear-gradient";
 // import { BlurView } from "@react-native-community/blur";
@@ -216,7 +225,6 @@ const IES_COORDS = [76.14814461016903, 10.564417196053261];
 const NGO_QUARTERS = [76.33303251966987, 10.02020933776492];
 const MODEL_COORDS = [-74.00597, 40.71427];
 // Test user id
-const USER_ID = "66e6fdde8b16924feae61f5f";
 const IS_MEMBER = false;
 
 Mapbox.setAccessToken(REACT_APP_MAPBOX_ACCESS_TOKEN);
@@ -226,6 +234,7 @@ const MapScreen = ({ navigation }: any) => {
   const [radius, setRadius] = useState(10);
   const [events, setEvents] = useState([]);
   const [selectedPoints, setSelectedPoints] = useState(null);
+  const [selectedUser, setSelectedUser] = useState<Connection | null>(null);
 
   const [selectedZoneCoords, setSelectedZoneCoords] = useState({ latitude: 0, longitude: 0 });
 
@@ -234,9 +243,10 @@ const MapScreen = ({ navigation }: any) => {
   const [lastPressedId, setLastPressedId] = useState(null);
 
   const { isActive: isZoneVisible, onStart: visibleZone, onEnd: hideZone } = useSwitch(false);
-  const { isActive: isUsersVisible, onStart: visibleUsers, onEnd: hideUsers } = useSwitch(false);
+  const { isActive: isUsersVisible, onStart: visibleUsers, onEnd: hideUsers } = useSwitch(true);
 
   const { collegeRegion } = useSelector((state: RootState) => state.data);
+  const { authUser } = useSelector((state: RootState) => state.auth);
 
   const cameraRef = useRef<Camera | null>(null);
   const createZoneModalRef = useRef<BottomSheet>(null);
@@ -245,7 +255,9 @@ const MapScreen = ({ navigation }: any) => {
 
   const snapPoints = useMemo(() => ["30%"], []); // Create Zone or Map Press
 
-  const { logout } = useAuth();
+  const dispatch = useAppDispatch();
+
+  console.log("Connections", authUser?.connections);
 
   useEffect(() => {
     // Convert GeoJSON features to PointAnnotation coordinates
@@ -263,29 +275,52 @@ const MapScreen = ({ navigation }: any) => {
     setAnnotations(featureAnnotations);
   }, [features]);
 
+  // useEffect(() => {
+  //   getAllEvent();
+  // }, []);
+
   useEffect(() => {
-    const startWatchingPosition = async () => {
+    (async () => {
       const hasLocationPermission = await requestLocationPermission();
       if (!hasLocationPermission) return;
 
       const watchId = Geolocation.watchPosition(
-        handlePosition,
+        updateUserPosition,
         (error: any) => {
           console.error("Error getting position:", error);
         },
         {
           enableHighAccuracy: true,
-          distanceFilter: 1,
+          distanceFilter: 10, // meters
         },
       );
-
       return () => {
         Geolocation.clearWatch(watchId);
       };
+    })();
+  }, []);
+
+  const updateUserPosition = (position: any) => {
+    console.log(position.coords);
+    const { longitude, latitude } = position.coords;
+
+    if (authUser === null || !latitude || !longitude) {
+      return;
+    }
+
+    const message = {
+      event: SOCKET_EVENTS.USER_LOCATION,
+      payload: {
+        user_id: authUser._id,
+        coords: {
+          latitude,
+          longitude,
+        },
+      },
     };
 
-    // startWatchingPosition();
-  }, []);
+    sendMessage(message);
+  };
 
   // Create Zone or Map Press Modal
   const openCreateZoneModal = () => {
@@ -293,15 +328,6 @@ const MapScreen = ({ navigation }: any) => {
   };
   const viewZoneModal = () => {
     viewZoneModalRef.current?.expand();
-  };
-
-  const handlePosition = (position: any) => {
-    // console.log("change position", position.coords);
-    socket.emit("user-location", {
-      text: "hello",
-      user_id: USER_ID,
-      coords: position.coords,
-    });
   };
 
   const createZoneSheetHandler = useCallback((index: number) => {
@@ -441,7 +467,13 @@ const MapScreen = ({ navigation }: any) => {
           onClose={() => resetCamera([selectedZoneCoords.latitude, selectedZoneCoords.longitude])}
           isMember={IS_MEMBER}
         />
-        <UserDetailsModal ref={userDetailsModalRef} onUserDetails={gotoUserDetailsScreen} onChange={() => {}} onClose={() => {}} />
+        <UserDetailsModal
+          userData={selectedUser}
+          ref={userDetailsModalRef}
+          onUserDetails={gotoUserDetailsScreen}
+          onChange={() => {}}
+          onClose={() => setSelectedUser(null)}
+        />
       </Portal>
 
       {/* Map  */}
@@ -453,8 +485,8 @@ const MapScreen = ({ navigation }: any) => {
         scaleBarEnabled={false}
         compassPosition={{ top: 60, left: 10 }}
         // styleURL="mapbox://styles/mohammedfarisofficial1/clfgrkcas000801qxj8qp9reg"
-        styleURL="mapbox://styles/mapbox/dark-v11"
-        // styleURL="mapbox://styles/mapbox/light-v11"
+        // styleURL="mapbox://styles/mapbox/dark-v11"
+        styleURL="mapbox://styles/mapbox/light-v11"
         onMapIdle={e => console.log("Region Changed:", e)}
         onLongPress={(e: any) => {
           if (eventCoords != null) {
@@ -464,6 +496,8 @@ const MapScreen = ({ navigation }: any) => {
           setSelectedPoints(e.geometry.coordinates);
           openCreateZoneModal();
         }}>
+        {/* Image Test  */}
+        {/* <Images images={{ topImage: TEST_IMAGE_URL }} /> */}
         {/* Model render experiment  */}
         <Models models={models} />
         <ShapeSource onPress={zoneClickHandler} id={"shape-source-id-0"} shape={features}>
@@ -476,14 +510,31 @@ const MapScreen = ({ navigation }: any) => {
               <ZoneGallery onLongPress={onZoneLongPress} onPress={() => zoneViewHandler(annotation.coordinate)} id={annotation.id} />
             </MarkerView>
           ))}
-        {/* Users  */}
-        {isUsersVisible &&
+        {/* Dummy Users  */}
+        {false &&
           usersMarkers.map((annotation, index) => (
             <MarkerView key={annotation.id} coordinate={annotation.coordinate} allowOverlap={true}>
-              {/* <ZoneGallery onLongPress={onZoneLongPress} onPress={() => zoneViewHandler(annotation.coordinate)} id={annotation.id} /> */}
               <UserMarker index={index} onPress={() => userDetailsModalRef.current?.expand()} />
             </MarkerView>
           ))}
+        {/* Users  */}
+        {isUsersVisible &&
+          authUser?.connections.map((connection, index) => {
+            if (connection.location) {
+              return (
+                <MarkerView key={connection._id} coordinate={connection.location} allowOverlap={true}>
+                  <UserMarker
+                    text={connection.email}
+                    index={index}
+                    onPress={() => {
+                      setSelectedUser(connection);
+                      userDetailsModalRef.current?.expand();
+                    }}
+                  />
+                </MarkerView>
+              );
+            }
+          })}
 
         {/* <Light style={lightStyle}  /> */}
         {/* Clear events button */}
@@ -498,7 +549,7 @@ const MapScreen = ({ navigation }: any) => {
               alignItems: "center",
             }}></View>
         </TouchableOpacity>
-        <TouchableOpacity onPress={logout} style={{ position: "absolute", top: 100, right: 10, zIndex: 99 }} activeOpacity={0.5}>
+        <TouchableOpacity onPress={handleLogout} style={{ position: "absolute", top: 100, right: 10, zIndex: 99 }} activeOpacity={0.5}>
           <View
             style={{
               width: 44,
@@ -537,17 +588,6 @@ const MapScreen = ({ navigation }: any) => {
               alignItems: "center",
             }}></View>
         </TouchableOpacity>
-        {/* <TouchableOpacity onPress={logout} style={{ position: "absolute", top: 150, right: 10, zIndex: 99 }} activeOpacity={0.5}>
-          <View
-            style={{
-              width: 44,
-              height: 44,
-              backgroundColor: "gray",
-              borderRadius: 50,
-              justifyContent: "center",
-              alignItems: "center",
-            }}></View>
-        </TouchableOpacity> */}
 
         <Mapbox.Camera
           ref={cameraRef}
@@ -636,6 +676,7 @@ const MapScreen = ({ navigation }: any) => {
         <MarkerView coordinate={myCoords} />
 
         <LocationPuck
+          // topImage="topImage"
           visible={true}
           pulsing={{
             isEnabled: true,
@@ -668,4 +709,4 @@ const MapScreen = ({ navigation }: any) => {
   );
 };
 
-export default MapScreen;
+export default withAuth(MapScreen);

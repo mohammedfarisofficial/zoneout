@@ -1,8 +1,9 @@
 import axios from "axios";
 
 import * as ENDPOINTS from "@constants/endpoints";
+import { appAxios } from "@services/api-config";
 
-const SERVER_URL = "http://172.20.10.2:3001";
+const SERVER_URL = process.env.REACT_APP_SERVER_URL ?? "http://172.20.10.2:3001";
 
 export const signUp = async (data: { email: string; password: string }) => {
   try {
@@ -77,4 +78,25 @@ export const signInWithGoogle = async (data: { provider: string; id_token: any }
     console.log("Something went wrong!!");
     return { error: "An unexpected error occurred" };
   }
+};
+export const getUserDetails = async () => {
+  try {
+    const response = await appAxios.get(SERVER_URL + ENDPOINTS.AUTH_USER_DETAILS);
+    console.log("URL:", SERVER_URL + ENDPOINTS.AUTH_USER_DETAILS);
+    return { success: true, data: response.data };
+  } catch (error: any) {
+    if (error.response) {
+      if (error.response.status === 400 && error.response.data) {
+        return { error: error.response.data };
+      }
+    }
+    // Handle any unexpected error and return a structured error message
+    console.log("Something went wrong!!");
+    return { error: "An unexpected error occurred" }; // Return an object with an error message
+  }
+};
+// Events
+export const getAllEvent = async () => {
+  const response = await appAxios.get(ENDPOINTS.EVENTS_ALL);
+  console.log("Response getAllEvent", response.data.events.length);
 };

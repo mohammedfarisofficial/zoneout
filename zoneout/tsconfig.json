@@ -30,6 +30,9 @@
       "@navigation/*": [
         "src/navigation/*"
       ],
+      "@hoc/*": [
+        "src/hoc/*"
+      ],
    },
 }
 }

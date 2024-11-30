@@ -14,16 +14,17 @@ import * as ROUTES from "@constants/routes";
 
 import { signInWithGoogle as signInWithGoogleHelper } from "@helper/zoneout-api";
 import { ACCOUNT_CREATED, NO_ACCOUNT, SELECT_DOB_COMPLETED, VERIFIED_ACCOUNT } from "@constants/account-status";
-import { appStorage } from "@services/mmkv-storage";
-import { useAuth } from "src/context/AuthContext";
+import { appStorage, tokenStorage } from "@services/mmkv-storage";
+// import { useAuth } from "src/context/AuthContext";
 import { useAppDispatch } from "@store/index";
 import { startLoading, stopLoading } from "@store/ui/reducer";
+import { setLogged } from "@store/auth/reducer";
 
 const WelcomeScreen = ({ navigation }: any) => {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ["40%"], []);
 
-  const { setIsLogged } = useAuth();
+  // const { setIsLogged } = useAuth();
   const dispatch = useAppDispatch();
 
   const handleSheetChanges = useCallback((index: number) => {
@@ -53,13 +54,24 @@ const WelcomeScreen = ({ navigation }: any) => {
           if (data.account_status === VERIFIED_ACCOUNT) {
             if (data.user.account_progression === SELECT_DOB_COMPLETED || data.user.account_progression === ACCOUNT_CREATED) {
               // SignIn
+              // SignIn
               try {
+                console.log("data", data);
                 navigation.reset({
                   index: 0,
                   routes: [{ name: ROUTES.AUTH_WELCOME }],
                 });
+                const {
+                  tokens: { access_token, refresh_token },
+                } = data;
+                if (!access_token || !refresh_token) {
+                  return;
+                }
+                tokenStorage.set("access_token", access_token);
+                tokenStorage.set("refresh_token", refresh_token);
+
                 appStorage.setItem("isLogged", "true");
-                setIsLogged(true);
+                dispatch(setLogged(data.user));
               } catch (error) {
                 console.error("Error during login:", error);
               }

@@ -1,53 +1,62 @@
-import { Server } from "socket.io";
-import { Server as HttpServer } from "http";
+import { createServer } from "http";
+import { WebSocketServer } from "ws";
+import { geohashEncode, geohashNeighbors } from "../utils/geohash";
 
 import User from "../models/User";
 
-import { geohashEncode, geohashNeighbors } from "../utils/geohash";
+import * as SOCKET_EVENTS from "../constants/socket-event";
 
-let io: Server;
+let wss: WebSocketServer;
 
-export const initSocket = (server: HttpServer) => {
-   io = new Server(server, {
-      cors: {
-         origin: "*", // specify a specific origin
-         methods: ["GET", "POST"], // allowed methods
-      },
-   });
-
-   io.on("connection", (socket) => {
+export const initSocket = (server: ReturnType<typeof createServer>) => {
+   wss = new WebSocketServer({ server });
+   wss.on("connection", (ws) => {
       console.log("A user connected");
+      ws.on("message", async (message) => {
+         try {
+            const data = JSON.parse(message.toString());
+            const { event, payload } = data;
 
-      socket.on("user-location", async (data) => {
-         const { user_id, coords } = data;
-         const { latitude, longitude } = coords;
-         //Gen user hash
-         const hash = await geohashEncode(latitude, longitude);
+            if (event === SOCKET_EVENTS.USER_LOCATION) {
+               const { user_id, coords } = payload;
+               const { latitude, longitude } = coords;
 
-         await User.findByIdAndUpdate(user_id, {
-            $set: { location: [longitude, latitude], geohash: hash },
-         });
+               console.log("user_id, coords", user_id, coords);
+               // Generate geohash
+               const hash = await geohashEncode(latitude, longitude);
+               await User.findByIdAndUpdate(user_id, {
+                  $set: { location: [longitude, latitude], geohash: hash },
+               });
 
-         const neighbors = await geohashNeighbors(hash.toString());
+               // const neighbors = await geohashNeighbors(hash.toString());
 
-         const nearbyUsers = await User.find({
-            geohash: { $in: [hash, ...neighbors] },
-         });
-         // Send Notification
-         console.log(nearbyUsers);
+               // const nearbyUsers = await User.find({
+               //    geohash: { $in: [hash, ...neighbors] },
+               // });
+
+               // Send notification back to the client
+               // console.log("nearbyUsers",nearbyUsers)
+               // if (nearbyUsers.length) {
+               //    ws.send(JSON.stringify({ event: "nearby-users", data: nearbyUsers }));
+               // }
+            }
+         } catch (error) {
+            console.error("Error handling message:", error);
+         }
       });
 
-      socket.on("disconnect", () => {
+      // Handle disconnection
+      ws.on("close", () => {
          console.log("User disconnected");
       });
    });
 
-   return io;
+   return wss;
 };
 
-export const getIO = () => {
-   if (!io) {
-      throw new Error("Socket.io not initialized!");
+export const getWSS = () => {
+   if (!wss) {
+      throw new Error("WebSocket server not initialized!");
    }
-   return io;
+   return wss;
 };

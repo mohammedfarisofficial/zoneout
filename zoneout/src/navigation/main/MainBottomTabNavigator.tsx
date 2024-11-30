@@ -1,12 +1,11 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 
-import MapScreen from "@screens/main/MapScreen";
-import AccountStackNavigator from "./AccountStackNavigator";
-import MainStackNavigator from "./MainStackNavigator";
+import AccountStackNavigator from "@navigation/main/AccountStackNavigator";
+import MainStackNavigator from "@navigation/main/MainStackNavigator";
+import ChatStackNavigator from "@navigation/chat/ChatStackNavigator";
 
 import * as ROUTES from "@constants/routes";
-import ChatStackNavigator from "../chat/ChatStackNavigator";
 
 const Tab = createBottomTabNavigator();
 
@@ -23,9 +22,9 @@ const MainBottomTabNavigator = () => {
           headerShown: false,
         };
       }}>
-      <Tab.Screen name="main" options={{ headerShown: false }} component={MainStackNavigator} />
+      <Tab.Screen name={ROUTES.MAIN} options={{ headerShown: false }} component={MainStackNavigator} />
       <Tab.Screen name={ROUTES.CHAT} options={{ headerShown: false }} component={ChatStackNavigator} />
-      <Tab.Screen name="account" component={AccountStackNavigator} />
+      <Tab.Screen name={ROUTES.ACCOUNT} component={AccountStackNavigator} />
     </Tab.Navigator>
   );
 };

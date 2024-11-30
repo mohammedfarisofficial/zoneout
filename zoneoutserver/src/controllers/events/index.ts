@@ -17,7 +17,7 @@ export const createEvent = async (req: Request, res: Response) => {
    try {
       const { created_by, polygon, coords } = req.body;
       const { latitude, longitude } = coords;
-      const hash = await geohashEncode(coords[1], coords[0])
+      const hash = await geohashEncode(coords[1], coords[0]);
       // Log the received coordinates for debugging
       console.log("Received polygon coordinates:", polygon.geometry.coordinates);
 
@@ -31,16 +31,26 @@ export const createEvent = async (req: Request, res: Response) => {
       });
 
       const savedEvent = await newEvent.save();
-      const neighbors = await geohashNeighbors(hash.toString())
+      const neighbors = await geohashNeighbors(hash.toString());
 
       const nearbyUsers = await User.find({
-        geohash: { $in: [hash, ...neighbors] },
+         geohash: { $in: [hash, ...neighbors] },
       });
-      // Send Notification 
-      console.log(nearbyUsers)
+      // Send Notification
+      console.log(nearbyUsers);
       res.json(savedEvent);
    } catch (error) {
       console.error("Error creating event:", error);
       res.status(500).json({ error: "Failed to create event" });
+   }
+};
+
+export const getAllEvents = async (req: Request, res: Response) => {
+   try {
+      const allEvents = await Event.find();
+      return res.status(200).json({ message: "College Found", events: allEvents });
+   } catch (error) {
+      console.error("Error creating event:", error);
+      res.status(500).json({ error: "Failed to get event" });
    }
 };
