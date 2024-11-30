@@ -11,10 +11,12 @@ import locationSchema from "./Location";
 const UserSchema: Schema = new Schema({
    username: {
       type: String,
+      unique: true,
    },
    email: {
       type: String,
       required: true,
+      unique: true,
    },
    password: {
       type: String,
@@ -24,6 +26,10 @@ const UserSchema: Schema = new Schema({
    },
    geohash: {
       type: String,
+   },
+   signin_method: {
+      type: Number,
+      default: 0,
    },
    account_progression: { type: Number },
    otp_code: { type: String, required: false },

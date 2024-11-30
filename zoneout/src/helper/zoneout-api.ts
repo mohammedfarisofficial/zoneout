@@ -66,3 +66,15 @@ export const setDOB = async (data: { userId: string; dob: Date }) => {
     return { error: "An unexpected error occurred" };
   }
 };
+
+export const signInWithGoogle = async (data: { provider: string; id_token: any }) => {
+  try {
+    const response = await axios.post(SERVER_URL + ENDPOINTS.AUTH_OAUTH, data);
+    console.log("URL:", SERVER_URL + ENDPOINTS.AUTH_OAUTH);
+
+    return { success: true, data: response.data };
+  } catch (error) {
+    console.log("Something went wrong!!");
+    return { error: "An unexpected error occurred" };
+  }
+};

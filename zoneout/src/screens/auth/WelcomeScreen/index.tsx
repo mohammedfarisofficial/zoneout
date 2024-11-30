@@ -2,6 +2,7 @@ import { useCallback, useMemo, useRef } from "react";
 import { Alert, SafeAreaView } from "react-native";
 import { styles } from "./styles";
 import { GoogleSignin, isErrorWithCode, isSuccessResponse, statusCodes } from "@react-native-google-signin/google-signin";
+import axios from "axios";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 
 import AuthCTAButton, { AuthCTAButtonVariants } from "@components/ui/auth/auth-button";
@@ -10,11 +11,17 @@ import Button from "@components/ui/button";
 
 import * as FONTS from "@constants/font";
 import * as ROUTES from "@constants/routes";
-import axios from "axios";
+
+import { signInWithGoogle as signInWithGoogleHelper } from "@helper/zoneout-api";
+import { ACCOUNT_CREATED, NO_ACCOUNT, SELECT_DOB_COMPLETED, VERIFIED_ACCOUNT } from "@constants/account-status";
+import { appStorage } from "@services/mmkv-storage";
+import { useAuth } from "src/context/AuthContext";
 
 const WelcomeScreen = ({ navigation }: any) => {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ["40%"], []);
+
+  const { setIsLogged } = useAuth();
 
   const handleSheetChanges = useCallback((index: number) => {
     console.log("handleSheetChanges", index);
@@ -32,10 +39,31 @@ const WelcomeScreen = ({ navigation }: any) => {
       await GoogleSignin.hasPlayServices();
       const response = await GoogleSignin.signIn();
       if (isSuccessResponse(response)) {
-        const res = await axios.post("http://172.20.10.4:3001/auth/oauth", {
+        const formData = {
           provider: "google",
           id_token: response.data.idToken,
-        });
+        };
+        const { error, success, data } = await signInWithGoogleHelper(formData);
+        if (success && data) {
+          console.log("Data : ", data);
+          if (data.account_status === VERIFIED_ACCOUNT) {
+            if (data.user.account_progression === SELECT_DOB_COMPLETED || data.user.account_progression === ACCOUNT_CREATED) {
+              // SignIn
+              try {
+                navigation.reset({
+                  index: 0,
+                  routes: [{ name: ROUTES.AUTH_WELCOME }],
+                });
+                appStorage.setItem("isLogged", "true");
+                setIsLogged(true);
+              } catch (error) {
+                console.error("Error during login:", error);
+              }
+            }
+          } else if (data.account_status === NO_ACCOUNT) {
+            navigation.navigate(ROUTES.SIGN_UP, { screen: ROUTES.SIGN_UP_SELECT_COLLEGE, params: { userId: data.user._id } });
+          }
+        }
       } else {
         console.log("sign in was cancelled by user");
       }

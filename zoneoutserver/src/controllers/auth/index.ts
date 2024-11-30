@@ -9,14 +9,18 @@ import { generateOtp } from "../../utils/otp";
 import { NGO_POLYGON } from "../../data";
 
 import {
+   // AC Status
    ACCOUNT_CREATED,
-   CREDENTIALS_COMPLETED,
    NO_ACCOUNT,
+   // AC Creation progress
+   CREDENTIALS_COMPLETED,
    OTP_COMPLETED,
    SELECT_COLLEGE_COMPLETED,
    SELECT_DOB_COMPLETED,
    VERIFIED_ACCOUNT,
 } from "../../constants/account-progress";
+
+import { SIGNIN_WITH_GOOGLE } from "../../constants/signin-methods";
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -236,7 +240,48 @@ export const oauthUser = async (req: Request, res: Response) => {
          audience: process.env.GOOGLE_CLIENT_ID,
       });
       const payload = ticket.getPayload();
-      console.log("payload", payload);
+      console.log("payload", payload, provider);
+      const { picture, email } = ticket.getPayload();
+
+      // Params checking
+      if (!picture && !email) {
+         return res.status(400).json({
+            error: "Missing required parameters",
+         });
+      }
+
+      // Check Already exiting account
+      const existingAccount = await User.findOne({ email });
+      if (existingAccount) {
+         console.log("trigger")
+         if (existingAccount.signin_method === SIGNIN_WITH_GOOGLE) {
+            console.log("trigger 1")
+            const existingUser = existingAccount.toObject();
+            return res.status(200).json({
+               message: "Account already exist!",
+               user: existingUser,
+               account_status: VERIFIED_ACCOUNT,
+            });
+         } else {
+            return res.status(400).json({
+               error: "Something went wrong!",
+            });
+         }
+      }
+
+      // Create New User
+      const newUser = new User({
+         email,
+         signin_method: SIGNIN_WITH_GOOGLE,
+         account_progression: OTP_COMPLETED,
+      });
+      const savedUser = await newUser.save();
+      const user = savedUser.toObject();
+      console.log("user", user);
+      return res.status(200).json({
+         message: "User created successfully",
+         user,
+         account_status: NO_ACCOUNT,
+      });
    }
-   return;
 };
