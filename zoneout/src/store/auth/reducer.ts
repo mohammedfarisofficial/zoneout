@@ -30,8 +30,14 @@ const authSlice = createSlice({
       state.isLogged = false;
       state.authUser = null;
     },
+    updateConnectionLocation: (state, action: PayloadAction<{ user_id: string; location: [number, number] }>) => {
+      const connection = state.authUser?.connections.find(c => c._id === action.payload.user_id);
+      if (connection) {
+        connection.location = action.payload.location;
+      }
+    },
   },
 });
 
-export const { setLogged, logout } = authSlice.actions;
+export const { setLogged, logout, updateConnectionLocation } = authSlice.actions;
 export default authSlice.reducer;

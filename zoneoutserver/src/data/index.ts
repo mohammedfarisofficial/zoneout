@@ -3,7 +3,9 @@ export const NGO_POLYGON = {
    features: [
       {
          type: "Feature",
-         properties: {},
+         properties: {
+            name: "NGO TEST CAMPUS"
+         },
          geometry: {
             coordinates: [
                [

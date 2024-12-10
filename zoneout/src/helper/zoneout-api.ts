@@ -100,3 +100,21 @@ export const getAllEvent = async () => {
   const response = await appAxios.get(ENDPOINTS.EVENTS_ALL);
   console.log("Response getAllEvent", response.data.events.length);
 };
+
+// Connections
+export const getConnectionDetails = async (connnectionId: string) => {
+  try {
+    const response = await appAxios.get(SERVER_URL + ENDPOINTS.CONNECTION + "/" + connnectionId);
+    console.log("URL:", SERVER_URL + ENDPOINTS.CONNECTION + "/" + connnectionId);
+    return { success: true, data: response.data };
+  } catch (error: any) {
+    if (error.response) {
+      if (error.response.status === 400 && error.response.data) {
+        return { error: error.response.data };
+      }
+    }
+    // Handle any unexpected error and return a structured error message
+    console.log("Something went wrong!!");
+    return { error: "An unexpected error occurred" }; // Return an object with an error message
+  }
+};

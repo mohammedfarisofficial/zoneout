@@ -79,3 +79,37 @@ export const userConnections = async (req: Request, res: Response) => {
       res.status(500).send({ error: "Failed to fetch connections." });
    }
 };
+export const getConnectionDetails = async (req: Request, res: Response) => {
+   const { connectionId } = req.params;
+   console.log("connectionId", connectionId);
+   // Params checking
+   if (!connectionId) {
+      return res.status(400).json({
+         // type: 1,
+         error: "Missing required parameters",
+      });
+   }
+
+   const connectionDetails = await User.findById(connectionId);
+   if (!connectionDetails) {
+      return res.status(404).json({
+         // type: 1,
+         error: "Connection not found!",
+      });
+   }
+   const formattedConnection = connectionDetails.toObject();
+   // Remove sensitive data
+   delete formattedConnection.password;
+   delete formattedConnection.otp_code;
+   delete formattedConnection.otp_expiry;
+   delete formattedConnection.dob;
+   delete formattedConnection.signin_method;
+   delete formattedConnection.account_progression;
+
+   console.log("connectionDetails", formattedConnection);
+
+   return res.status(200).json({
+      message: "Connection details found!",
+      connection: formattedConnection,
+   });
+};

@@ -9,3 +9,15 @@
 [X] Store User Details in Redux
 [X] Connection request, accept, and get list APIs
 [X] Display Connection only on map
+[X] Share connection location to connections with wss
+
+<!-- 01/11/2024 -->
+[X] Create Endpoint for connection details
+[X] Connected Endpoint for connection details
+
+<!-- 10/11/2024 -->
+[X] Uploaded Campus data to mongoDB
+[ ] 
+
+
+67587ee21e93d4cab11402c5

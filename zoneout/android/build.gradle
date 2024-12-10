@@ -7,8 +7,7 @@ buildscript {
         ndkVersion = "26.1.10909125"
         kotlinVersion = "1.9.24"
         RNMapboxMapsVersion = '11.4.1'
-
-
+        playServicesLocationVersion = "21.0.1"
     }
     repositories {
         google()

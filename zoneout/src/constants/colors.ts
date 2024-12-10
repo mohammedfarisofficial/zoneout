@@ -7,3 +7,5 @@ export const GRAY_300               = "#D1D1D1"
 export const GRAY_400               = "#cacaca"
 
 export const BLUE_600               = "#1977F3"
+
+export const PINK_300               = "#EE83EB"

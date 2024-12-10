@@ -27,12 +27,14 @@ import { styles } from "./styles";
 
 import { Slider } from "@miblanchard/react-native-slider";
 
-import Geolocation from "@react-native-community/geolocation";
+// import Geolocation from "@react-native-community/geolocation";
+import Geolocation from 'react-native-geolocation-service';
+
 
 import { REACT_APP_MAPBOX_ACCESS_TOKEN } from "@env";
 
 import { requestLocationPermission } from "../../../utils/geolocation";
-import { sendMessage } from "@services/socketio";
+import { closeWebSocket, connectWebSocket, sendMessage, socket } from "@services/socketio";
 import { useAuth } from "src/context/AuthContext";
 
 import { RootState, useAppDispatch } from "@store/index";
@@ -53,11 +55,12 @@ import useSwitch from "@hooks/useSwitch";
 import UserMarker, { TEST_IMAGE_URL } from "@components/map/user-marker";
 import UserDetailsModal from "@components/modals/UserDetailsModal";
 import { getAllEvent } from "@helper/zoneout-api";
-import { Connection, logout } from "@store/auth/reducer";
+import { Connection, logout, updateConnectionLocation } from "@store/auth/reducer";
 import { handleLogout } from "@store/auth/action";
 import withAuth from "src/hoc/withAuth";
 import { Avatar } from "@constants/images";
 import FastImage from "react-native-fast-image";
+import { scale } from "react-native-size-matters";
 
 // import LinearGradient from "react-native-linear-gradient";
 // import { BlurView } from "@react-native-community/blur";
@@ -242,11 +245,13 @@ const MapScreen = ({ navigation }: any) => {
   const [usersMarkers, setUsersMarkers] = useState([]);
   const [lastPressedId, setLastPressedId] = useState(null);
 
-  const { isActive: isZoneVisible, onStart: visibleZone, onEnd: hideZone } = useSwitch(false);
+  const { isActive: isZoneVisible, onStart: visibleZone, onEnd: hideZone } = useSwitch(true);
   const { isActive: isUsersVisible, onStart: visibleUsers, onEnd: hideUsers } = useSwitch(true);
 
   const { collegeRegion } = useSelector((state: RootState) => state.data);
   const { authUser } = useSelector((state: RootState) => state.auth);
+
+  console.log("authUser.connections", authUser?.connections);
 
   const cameraRef = useRef<Camera | null>(null);
   const createZoneModalRef = useRef<BottomSheet>(null);
@@ -276,8 +281,10 @@ const MapScreen = ({ navigation }: any) => {
   useEffect(() => {
     (async () => {
       const hasLocationPermission = await requestLocationPermission();
-      if (!hasLocationPermission) return;
-
+      if (!hasLocationPermission) {
+        console.log("No permission")
+        return
+      };
       const watchId = Geolocation.watchPosition(
         updateUserPosition,
         (error: any) => {
@@ -288,7 +295,6 @@ const MapScreen = ({ navigation }: any) => {
           distanceFilter: 0, // meters
         },
       );
-
       watchIdRef.current = watchId;
     })();
     return () => {
@@ -298,8 +304,30 @@ const MapScreen = ({ navigation }: any) => {
     };
   }, []);
 
+  // useEffect(() => {
+  //     (async ()=> {
+  //       const hasLocationPermission = await requestLocationPermission();
+  //       if (!hasLocationPermission) {
+  //         console.log("No permission")
+  //         return
+  //       };
+  //     Geolocation.watchPosition(
+  //       (position) => {
+  //         console.log(position);
+  //       },
+  //       (error) => {
+  //         // See error code charts below.
+  //         console.log(error.code, error.message);
+  //       },
+  //       { enableHighAccuracy: true, distanceFilter: 0 }
+  //   );
+  //     })()
+  // }, []);
+  
+  
+
   const updateUserPosition = (position: any) => {
-    console.log(position.coords);
+    console.log("position.coords",position.coords);
     const { longitude, latitude } = position.coords;
 
     if (authUser === null || !latitude || !longitude) {
@@ -319,6 +347,33 @@ const MapScreen = ({ navigation }: any) => {
 
     sendMessage(message);
   };
+  useEffect(() => {
+    // Function to handle location updates
+    const handleLocationUpdate = (event: any) => {
+      try {
+        const update = JSON.parse(event.data);
+        const { user_id, latitude, longitude } = update.data;
+
+        dispatch(updateConnectionLocation({ user_id, location: [longitude, latitude] }));
+      } catch (error) {
+        console.error("Error parsing WebSocket message:", error);
+      }
+    };
+    // Establish WebSocket connection
+    connectWebSocket();
+    // Attach event listener
+    if (typeof socket !== "undefined") {
+      socket.onmessage = handleLocationUpdate;
+    } else {
+      console.error("WebSocket not initialized properly.");
+    }
+
+    // Cleanup on component unmount
+    return () => {
+      console.log("Cleaning up WebSocket...");
+      closeWebSocket();
+    };
+  }, [dispatch]);
 
   // Create Zone or Map Press Modal
   const openCreateZoneModal = () => {
@@ -431,7 +486,7 @@ const MapScreen = ({ navigation }: any) => {
 
   const gotoUserDetailsScreen = () => {
     userDetailsModalRef.current?.close();
-    navigation.navigate(ROUTES.MAIN, { screen: ROUTES.MAIN_ZONE_DETAILS });
+    navigation.navigate(ROUTES.MAIN, { screen: ROUTES.MAIN_USER_DETAILS, params: { userId: selectedUser?._id } });
   };
 
   return (
@@ -477,6 +532,72 @@ const MapScreen = ({ navigation }: any) => {
         />
       </Portal>
 
+      <TouchableOpacity onPress={() => setEvents([])} style={{ position: "absolute", top: 50, right: 10, zIndex: 99 }} activeOpacity={0.5}>
+          <View
+            style={{
+              width: scale(32),
+              height: scale(32),
+              backgroundColor: "gray",
+              borderRadius: 50,
+              justifyContent: "center",
+              alignItems: "center",
+            }}></View>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => (isUsersVisible ? hideUsers() : visibleUsers())}
+          style={{ position: "absolute", top: 100, right: 10, zIndex: 99 }}
+          activeOpacity={0.5}>
+          <View
+            style={{
+              width: scale(32),
+              height: scale(32),
+              backgroundColor: "gray",
+              borderRadius: 50,
+              justifyContent: "center",
+              alignItems: "center",
+            }}></View>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => (isZoneVisible ? hideZone() : visibleZone())}
+          style={{ position: "absolute", top: 150, right: 10, zIndex: 99 }}
+          activeOpacity={0.5}>
+          <View
+            style={{
+              width: scale(32),
+              height: scale(32),
+              backgroundColor: "gray",
+              borderRadius: 50,
+              justifyContent: "center",
+              alignItems: "center",
+            }}></View>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleLogout} style={{ position: "absolute", top: 50, left: 10, zIndex: 99 }} activeOpacity={0.5}>
+          <View
+            style={{
+              width: scale(32),
+              height: scale(32),
+              backgroundColor: "gray",
+              borderRadius: 50,
+              justifyContent: "center",
+              alignItems: "center",
+            }}></View>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => navigation.navigate(ROUTES.MAIN, { screen: ROUTES.MAIN_COLLEGE_DETAILS })}
+          style={{ position: "absolute", top: 50, left: 60, zIndex: 99 }}
+          activeOpacity={0.5}>
+          <View
+            style={{
+              width: scale(32),
+              height: scale(32),
+              backgroundColor: "gray",
+              borderRadius: 50,
+              justifyContent: "center",
+              alignItems: "center",
+            }}></View>
+        </TouchableOpacity>
+
       {/* Map  */}
       <MapView
         attributionEnabled
@@ -507,14 +628,14 @@ const MapScreen = ({ navigation }: any) => {
         {/* Image Gallery */}
         {isZoneVisible &&
           annotations.map(annotation => (
-            <MarkerView key={annotation.id} coordinate={annotation.coordinate} allowOverlap={true}>
+            <MarkerView allowOverlapWithPuck key={annotation.id} coordinate={annotation.coordinate} allowOverlap={true}>
               <ZoneGallery onLongPress={onZoneLongPress} onPress={() => zoneViewHandler(annotation.coordinate)} id={annotation.id} />
             </MarkerView>
           ))}
         {/* Dummy Users  */}
         {false &&
           usersMarkers.map((annotation, index) => (
-            <MarkerView key={annotation.id} coordinate={annotation.coordinate} allowOverlap={true}>
+            <MarkerView allowOverlapWithPuck key={annotation.id} coordinate={annotation.coordinate} allowOverlap={true}>
               <UserMarker index={index} onPress={() => userDetailsModalRef.current?.expand()} />
             </MarkerView>
           ))}
@@ -523,7 +644,7 @@ const MapScreen = ({ navigation }: any) => {
           authUser?.connections.map((connection, index) => {
             if (connection.location) {
               return (
-                <MarkerView key={connection._id} coordinate={connection.location} allowOverlap={true}>
+                <MarkerView allowOverlapWithPuck key={connection._id} coordinate={connection.location} allowOverlap={true}>
                   <UserMarker
                     text={connection.email}
                     index={index}
@@ -547,56 +668,7 @@ const MapScreen = ({ navigation }: any) => {
 
         {/* <Light style={lightStyle}  /> */}
         {/* Clear events button */}
-        <TouchableOpacity onPress={() => setEvents([])} style={{ position: "absolute", top: 50, right: 10, zIndex: 99 }} activeOpacity={0.5}>
-          <View
-            style={{
-              width: 44,
-              height: 44,
-              backgroundColor: "gray",
-              borderRadius: 50,
-              justifyContent: "center",
-              alignItems: "center",
-            }}></View>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleLogout} style={{ position: "absolute", top: 100, right: 10, zIndex: 99 }} activeOpacity={0.5}>
-          <View
-            style={{
-              width: 44,
-              height: 44,
-              backgroundColor: "gray",
-              borderRadius: 50,
-              justifyContent: "center",
-              alignItems: "center",
-            }}></View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => (isUsersVisible ? hideUsers() : visibleUsers())}
-          style={{ position: "absolute", top: 150, right: 10, zIndex: 99 }}
-          activeOpacity={0.5}>
-          <View
-            style={{
-              width: 44,
-              height: 44,
-              backgroundColor: "gray",
-              borderRadius: 50,
-              justifyContent: "center",
-              alignItems: "center",
-            }}></View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => (isZoneVisible ? hideZone() : visibleZone())}
-          style={{ position: "absolute", top: 200, right: 10, zIndex: 99 }}
-          activeOpacity={0.5}>
-          <View
-            style={{
-              width: 44,
-              height: 44,
-              backgroundColor: "gray",
-              borderRadius: 50,
-              justifyContent: "center",
-              alignItems: "center",
-            }}></View>
-        </TouchableOpacity>
+        
 
         <Mapbox.Camera
           ref={cameraRef}
@@ -656,7 +728,9 @@ const MapScreen = ({ navigation }: any) => {
         {eventCoords && (
           <>
             {/* Event Marker */}
-            <MarkerView coordinate={eventCoords}>
+            <MarkerView coordinate={eventCoords} 
+               anchor={{ x: 0.5, y: 0.5 }} // Center the marker
+               allowOverlap={true}>
               <TouchableOpacity
                 style={{
                   backgroundColor: "gray",

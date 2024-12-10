@@ -1,29 +1,20 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 
+// Import your stack navigators
 import AccountStackNavigator from "@navigation/main/AccountStackNavigator";
 import MainStackNavigator from "@navigation/main/MainStackNavigator";
 import ChatStackNavigator from "@navigation/chat/ChatStackNavigator";
+import CustomTabBar from "@components/custom-tabbar";
 
 import * as ROUTES from "@constants/routes";
 
 const Tab = createBottomTabNavigator();
 
-const MainBottomTabNavigator = () => {
+const MainBottomTabNavigator: React.FC = () => {
   return (
-    <Tab.Navigator
-      screenOptions={({ route }) => {
-        const routeName = getFocusedRouteNameFromRoute(route);
-        const isTabBarVisible = routeName !== "account-notification";
-        return {
-          tabBarStyle: {
-            display: isTabBarVisible ? "flex" : "none",
-          },
-          headerShown: false,
-        };
-      }}>
-      <Tab.Screen name={ROUTES.MAIN} options={{ headerShown: false }} component={MainStackNavigator} />
-      <Tab.Screen name={ROUTES.CHAT} options={{ headerShown: false }} component={ChatStackNavigator} />
+    <Tab.Navigator screenOptions={{ headerShown: false }} tabBar={props => <CustomTabBar {...props} />}>
+      <Tab.Screen name={ROUTES.MAIN} component={MainStackNavigator} />
+      <Tab.Screen name={ROUTES.CHAT} component={ChatStackNavigator} />
       <Tab.Screen name={ROUTES.ACCOUNT} component={AccountStackNavigator} />
     </Tab.Navigator>
   );

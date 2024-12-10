@@ -4,6 +4,7 @@ import authRouter from "./auth";
 import postsRouter from "./posts";
 import eventsRouter from "./events";
 import connectionRouter from "./connection";
+import campusRouter from "./campus";
 
 export default () => {
    const app = Router();
@@ -11,6 +12,7 @@ export default () => {
    authRouter(app);
    postsRouter(app);
    eventsRouter(app);
+   campusRouter(app);
    connectionRouter(app);
 
    return app;

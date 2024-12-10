@@ -5,7 +5,7 @@ export const withAuth = async (req, res, next) => {
    const authHeader = req.headers.authorization;
    if (!authHeader || !authHeader.startsWith("Bearer")) {
       // throw new UnauthenticatedError('Authentication invalid')
-      res.status(401).json({ message: "Invalid or expired token" });
+      return res.status(401).json({ message: "Invalid or expired token" });
    }
    const token = authHeader.split(" ")[1];
 

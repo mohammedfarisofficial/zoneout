@@ -1,6 +1,9 @@
 const WEBSOCKET_URL = process.env.REACT_APP_WSS_URL;
 
-let socket: WebSocket;
+console.log("WEBSOCKET_URL",WEBSOCKET_URL)
+
+
+export let socket: WebSocket;
 let isManuallyClosed = false;
 
 const reconnectInterval = 5000; // Retry every 5 seconds

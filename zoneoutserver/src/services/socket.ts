@@ -1,11 +1,11 @@
 import { createServer } from "http";
 import { WebSocketServer } from "ws";
+import { randomUUID } from "crypto";
 import { geohashEncode, geohashNeighbors } from "../utils/geohash";
 
 import User from "../models/User";
 
 import * as SOCKET_EVENTS from "../constants/socket-event";
-import { randomUUID } from "crypto";
 
 let wss: WebSocketServer;
 const connections: { [socketId: string]: WebSocket } = {};
