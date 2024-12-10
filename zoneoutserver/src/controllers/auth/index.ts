@@ -6,7 +6,6 @@ import User from "../../models/User";
 
 import { isValidEmail, isValidPassword } from "../../utils/validation";
 import { hashPassword } from "../../utils/bcrypt";
-import { generateOtp } from "../../utils/otp";
 import { NGO_POLYGON } from "../../data";
 
 import {
@@ -22,6 +21,8 @@ import {
 } from "../../constants/account-progress";
 
 import { SIGNIN_WITH_GOOGLE } from "../../constants/signin-methods";
+import Campus from "../../models/Campus";
+import { findCampus } from "../../helper/campus";
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -176,6 +177,10 @@ export const checkCollege = async (req: Request, res: Response) => {
    try {
       const { userId, coords } = req.body;
 
+      console.log("params", req.body);
+
+      // const userCoords = { latitude: 10.020317806691374, longitude: 76.33294685403126}
+
       // Params checking
       if (!userId || !coords) {
          return res.status(400).json({
@@ -183,14 +188,37 @@ export const checkCollege = async (req: Request, res: Response) => {
          });
       }
 
-      const testCollege = {
-         name: "Test Collge",
-         desc: "Test Desc",
+      const userLocation = {
+         type: "Point",
+         coordinates: [coords.lng, coords.lat],
       };
-      await User.findByIdAndUpdate(userId, { account_progression: SELECT_COLLEGE_COMPLETED });
-      return res
-         .status(200)
-         .json({ message: "College Found", college: NGO_POLYGON.features[0].geometry });
+
+      const campus = await findCampus(userLocation);
+      if (campus) {
+         console.log("User is inside a campus:", campus.name);
+
+         await User.findByIdAndUpdate(userId, { account_progression: SELECT_COLLEGE_COMPLETED });
+         return res.status(200).json({
+            message: "College Found",
+            college: {
+               _id : campus._id,
+               coordinates: campus.polygon.coordinates,
+               type: campus.polygon.type,
+               name: campus.name,
+            },
+            // college: NGO_POLYGON.features[0].geometry,
+         });
+      } else {
+         console.log("User is not inside any campus.");
+         res.status(400).json({
+            message: "User is not inside any campus",
+         });
+      }
+
+      //    const testCollege = {
+      //       name: "Test Collge",
+      //       desc: "Test Desc",
+      //    };
    } catch (error: unknown) {
       return res
          .status(500)

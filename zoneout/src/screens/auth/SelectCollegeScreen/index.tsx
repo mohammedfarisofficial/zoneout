@@ -22,7 +22,7 @@ const NGO_QUARTERS = [76.33303251966987, 10.02020933776492];
 const SelectCollegeScreen = ({ navigation, route }: any) => {
   const { userId } = route.params || {};
   const [userCoords, setUserCoords] = useState({ lat: 0, lng: 0 });
-  const [college, setCollege] = useState(null);
+  const [college, setCollege] = useState<any>(null);
 
   const cameraRef = useRef<Camera | null>(null);
   const dispatch = useAppDispatch();
@@ -43,7 +43,7 @@ const SelectCollegeScreen = ({ navigation, route }: any) => {
           },
           {
             enableHighAccuracy: true,
-            distanceFilter: 50,
+            distanceFilter: 0,
           },
         );
 
@@ -55,6 +55,8 @@ const SelectCollegeScreen = ({ navigation, route }: any) => {
       startWatchingPosition();
     }, []),
   );
+
+  console.log("userCoords",userCoords)
 
   useEffect(() => {
     (async () => {
@@ -80,7 +82,7 @@ const SelectCollegeScreen = ({ navigation, route }: any) => {
 
   console.log("college render", college);
 
-  const verifyOTP = () => {
+  const selectCampusHandler = () => {
     if (college === null) {
       // Please select college to continue
       return;
@@ -125,7 +127,10 @@ const SelectCollegeScreen = ({ navigation, route }: any) => {
           )}
         </MapView>
       </View>
-      <Button variant="secondary" onPress={verifyOTP} text="Select" />
+      {college &&  <Typography>Campus found!</Typography>}
+      {college &&  <Typography>Name : {college?.name}</Typography>}
+      {college &&  <Typography>Campus ID : {college?._id}</Typography>}
+      <Button variant="secondary" onPress={selectCampusHandler} text="Select" />
     </View>
   );
 };
