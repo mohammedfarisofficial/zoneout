@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import { OAuth2Client } from "google-auth-library";
-import jwt from "jsonwebtoken";
 
 import User from "../../models/User";
 
@@ -16,13 +15,13 @@ import {
    CREDENTIALS_COMPLETED,
    OTP_COMPLETED,
    SELECT_COLLEGE_COMPLETED,
-   SELECT_DOB_COMPLETED,
    VERIFIED_ACCOUNT,
 } from "../../constants/account-progress";
-
 import { SIGNIN_WITH_GOOGLE } from "../../constants/signin-methods";
-import Campus from "../../models/Campus";
-import { findCampus } from "../../helper/campus";
+
+// Helpers
+import { findCampusById, findCampusByUserLocation } from "../../helpers/campus";
+import { findUserById, generateRefreshTokens } from "../../helpers/auth";
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -139,10 +138,7 @@ export const verifyOTP = async (req: Request, res: Response) => {
 
    // Verify OTP code
    if (otp_code === user.otp_code) {
-      if (
-         user.account_progression === SELECT_DOB_COMPLETED ||
-         user.account_progression === ACCOUNT_CREATED
-      ) {
+      if (user.account_progression === ACCOUNT_CREATED) {
          const loggedUser = user.toObject();
          // Remove sensitive data
          delete loggedUser.password;
@@ -173,7 +169,7 @@ export const verifyOTP = async (req: Request, res: Response) => {
    }
 };
 
-export const checkCollege = async (req: Request, res: Response) => {
+export const checkCampus = async (req: Request, res: Response) => {
    try {
       const { userId, coords } = req.body;
 
@@ -193,15 +189,13 @@ export const checkCollege = async (req: Request, res: Response) => {
          coordinates: [coords.lng, coords.lat],
       };
 
-      const campus = await findCampus(userLocation);
+      const campus = await findCampusByUserLocation(userLocation);
       if (campus) {
          console.log("User is inside a campus:", campus.name);
-
-         await User.findByIdAndUpdate(userId, { account_progression: SELECT_COLLEGE_COMPLETED });
          return res.status(200).json({
-            message: "College Found",
+            message: "User is inside a campus",
             college: {
-               _id : campus._id,
+               _id: campus._id,
                coordinates: campus.polygon.coordinates,
                type: campus.polygon.type,
                name: campus.name,
@@ -210,15 +204,10 @@ export const checkCollege = async (req: Request, res: Response) => {
          });
       } else {
          console.log("User is not inside any campus.");
-         res.status(400).json({
+         return res.status(400).json({
             message: "User is not inside any campus",
          });
       }
-
-      //    const testCollege = {
-      //       name: "Test Collge",
-      //       desc: "Test Desc",
-      //    };
    } catch (error: unknown) {
       return res
          .status(500)
@@ -239,18 +228,64 @@ export const setDOB = async (req: Request, res: Response) => {
    try {
       const user = await User.findOneAndUpdate(
          { _id: userId },
-         { dob, account_progression: SELECT_DOB_COMPLETED },
+         { dob, account_progression: ACCOUNT_CREATED },
          { new: true }
       );
       if (!user) {
          return { status: 400, message: "User not found" };
       }
+      const loggedUser = user.toObject();
+      // Remove sensitive data
+      delete loggedUser.password;
+      delete loggedUser.otp_code;
+      delete loggedUser.otp_expiry;
 
-      return res.status(200).json({ message: "User updated successfully", user });
+      const access_token = user.createAccessToken();
+      const refresh_token = user.createRefreshToken();
+
+      return res.status(200).json({
+         message: "Account created successfully",
+         user: loggedUser,
+         account_status: VERIFIED_ACCOUNT,
+         tokens: { access_token, refresh_token },
+      });
    } catch (error) {
       return res
          .status(500)
          .json({ error: "Error adding user DOB", details: (error as Error).message });
+   }
+};
+
+export const setUserCampus = async (req: Request, res: Response) => {
+   const { userId, campusId } = req.body;
+   console.log("setUserCampus body: ", req.body);
+
+   // Params checking
+   if (!userId || !campusId) {
+      return res.status(400).json({
+         error: "Missing required parameters",
+      });
+   }
+   try {
+      const campus = await findCampusById(campusId);
+      const user = await findUserById(userId);
+
+      if (!campus) {
+         return res.status(400).json("Invalid campusId!");
+      }
+      if (user.campus) {
+         return res.status(400).json("User already selected the campus!");
+      }
+      const updatedUser = await User.findByIdAndUpdate(
+         userId,
+         { campus: campusId, account_progression: SELECT_COLLEGE_COMPLETED },
+         { new: true }
+      );
+      return res.status(200).json({ user: updatedUser });
+   } catch (error) {
+      return res
+         .status(500)
+         .json({ error: "Error setUserCampus", message: (error as Error).message });
    }
 };
 
@@ -350,37 +385,6 @@ export const refreshToken = async (req: Request, res: Response) => {
       res.status(401).json({ message: "Invalid or expired token" });
    }
 };
-
-async function generateRefreshTokens(
-   token,
-   refresh_secret,
-   refresh_expiry,
-   access_secret,
-   access_expiry
-) {
-   try {
-      const payload = jwt.verify(token, refresh_secret);
-      const user = await User.findById(payload.userId);
-      if (!user) {
-         console.log("User not found!");
-         // res.status(401).json({ message: "Invalid or expired token" });
-      }
-
-      const accessToken = await jwt.sign({ userId: user.id }, access_secret, {
-         expiresIn: access_expiry,
-      });
-
-      const newRefreshToken = await jwt.sign({ userId: user.id }, refresh_secret, {
-         expiresIn: refresh_expiry,
-      });
-
-      return { accessToken, newRefreshToken };
-   } catch (error) {
-      console.error(error);
-      console.log("Invalid or expired token");
-      // throw new UnauthenticatedError("Invalid or expired token");
-   }
-}
 
 export const getUserDetails = async (req: Request, res: Response) => {
    const { userId } = req.user;

@@ -11,6 +11,8 @@ import * as ROUTES from "@constants/routes";
 import { RootState, useAppDispatch } from "@store/index";
 import { setDOB } from "@helper/zoneout-api";
 import { startLoading, stopLoading } from "@store/ui/reducer";
+import { appStorage, tokenStorage } from "@services/mmkv-storage";
+import { setLogged } from "@store/auth/reducer";
 
 const SetDOBScreen = ({ navigation, route }: any) => {
   const { userId } = route.params || {};
@@ -31,7 +33,27 @@ const SetDOBScreen = ({ navigation, route }: any) => {
         return;
       }
       if (success && data) {
-        navigation.navigate(ROUTES.SIGN_UP, { screen: ROUTES.SIGN_UP_SET_PROFILE, params: { userId } });
+        try {
+          console.log("data", data);
+          navigation.reset({
+            index: 0,
+            routes: [{ name: ROUTES.AUTH_WELCOME }],
+          });
+          const {
+            tokens: { access_token, refresh_token },
+          } = data;
+          if (!access_token || !refresh_token) {
+            return;
+          }
+          tokenStorage.set("access_token", access_token);
+          tokenStorage.set("refresh_token", refresh_token);
+
+          appStorage.setItem("isLogged", "true");
+          dispatch(setLogged(data.user));
+        } catch (error) {
+          console.error("Error during login:", error);
+        }
+        // navigation.navigate(ROUTES.SIGN_UP, { screen: ROUTES.SIGN_UP_SET_PROFILE, params: { userId } });
       }
     } catch (error) {
       console.log("Something went wrong!", error);

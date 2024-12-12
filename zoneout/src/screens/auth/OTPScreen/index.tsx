@@ -9,7 +9,6 @@ import * as AC_STATUS from "@constants/account-status";
 
 import { verifyOTP } from "../../../helper/zoneout-api";
 import { useLayoutEffect, useState } from "react";
-import { useAuth } from "src/context/AuthContext";
 import { appStorage, tokenStorage } from "@services/mmkv-storage";
 import { useAppDispatch } from "@store/index";
 import { startLoading, stopLoading } from "@store/ui/reducer";

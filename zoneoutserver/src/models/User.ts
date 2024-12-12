@@ -24,6 +24,8 @@ export interface IUserDocument extends Document {
    sent_requests: Types.ObjectId[];
    received_requests: Types.ObjectId[];
    connections: Types.ObjectId[];
+   // Campus
+   campus?: Types.ObjectId;
    createAccessToken(): string;
    createRefreshToken(): string;
 }
@@ -56,6 +58,8 @@ const UserSchema: Schema<IUserDocument> = new Schema({
    sent_requests: [{ type: Schema.Types.ObjectId, ref: "User" }],
    received_requests: [{ type: Schema.Types.ObjectId, ref: "User" }],
    connections: [{ type: Schema.Types.ObjectId, ref: "User" }],
+   // Campus 
+   campus: { type: Schema.Types.ObjectId, ref: "Campus" }
 });
 
 // Index for geospatial queries

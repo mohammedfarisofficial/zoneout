@@ -1,35 +1,40 @@
-import express from "express";
-import bodyParser from "body-parser";
-import cors from "cors";
-import helmet from "helmet";
-import morgan from "morgan";
-import { createServer } from "http";
-import config from "./config/env";
-import { initSocket } from "./services/socket";
-import connectDB from "./database";
-import indexRouter from "./routes";
-const app = express();
-const server = createServer(app);
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const body_parser_1 = __importDefault(require("body-parser"));
+const cors_1 = __importDefault(require("cors"));
+const helmet_1 = __importDefault(require("helmet"));
+const morgan_1 = __importDefault(require("morgan"));
+const http_1 = require("http");
+const env_1 = __importDefault(require("./config/env"));
+const socket_1 = require("./services/socket");
+const database_1 = __importDefault(require("./database"));
+const routes_1 = __importDefault(require("./routes"));
+const app = (0, express_1.default)();
+const server = (0, http_1.createServer)(app);
 const startServer = async () => {
     //middlewares
-    app.use(express.json());
-    app.use(cors());
-    app.use(bodyParser.json());
-    app.use(helmet());
-    app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
-    app.use(morgan("common"));
-    const io = initSocket(server);
+    app.use(express_1.default.json());
+    app.use((0, cors_1.default)());
+    app.use(body_parser_1.default.json());
+    app.use((0, helmet_1.default)());
+    app.use(helmet_1.default.crossOriginResourcePolicy({ policy: "cross-origin" }));
+    app.use((0, morgan_1.default)("common"));
+    const io = (0, socket_1.initSocket)(server);
     // Attach io to the req object
     app.use((req, res, next) => {
         req.io = io;
         next();
     });
     //routes
-    app.use(indexRouter());
+    app.use((0, routes_1.default)());
     //database
-    connectDB({ db: config.mongodb.url });
+    (0, database_1.default)({ db: env_1.default.mongodb.url });
     server
-        .listen(config.app.port, () => console.log(`Server running on port ${config.app.port}`))
+        .listen(env_1.default.app.port, () => console.log(`Server running on port ${env_1.default.app.port}`))
         .on("error", (error) => {
         console.log(error.message);
         process.exit(1);

@@ -1,11 +1,21 @@
-import { Router } from "express";
-// import usersRoute from './users';
-import { createUser, loginUser } from "../../controllers";
-export default (app) => {
-    const router = Router();
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const controllers_1 = require("../../controllers");
+const auth_1 = require("../../controllers/auth");
+const withAuth_1 = require("../../middleware/withAuth");
+exports.default = (app) => {
+    const router = (0, express_1.Router)();
     app.use("/auth", router);
-    router.get("/sign-in", loginUser);
-    router.post("/sign-up", createUser);
+    router.get("/sign-in", controllers_1.loginUser);
+    router.post("/sign-up", controllers_1.createUser);
+    router.post("/verify-otp", auth_1.verifyOTP);
+    router.post("/check-collage", auth_1.checkCollege);
+    router.post("/set-dob", auth_1.setDOB);
+    router.post("/refresh-token", auth_1.refreshToken);
+    router.get("/user-details", withAuth_1.withAuth, auth_1.getUserDetails);
+    // Social Login
+    router.post("/oauth", auth_1.oauthUser);
     return router;
 };
 //# sourceMappingURL=index.js.map

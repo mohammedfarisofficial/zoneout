@@ -4,7 +4,8 @@ export const CONNECTION                 = "/connection"
 
 export const AUTH_SIGNUP                = `${AUTH}/sign-up`
 export const AUTH_VERIFY_OTP            = `${AUTH}/verify-otp`
-export const AUTH_CHECK_COLLEGE         = `${AUTH}/check-collage`
+export const AUTH_CHECK_COLLEGE         = `${AUTH}/check-campus`
+export const AUTH_SET_COLLEGE           = `${AUTH}/set-campus`
 export const AUTH_SET_DOB               = `${AUTH}/set-dob`
 export const AUTH_USER_DETAILS          = `${AUTH}/user-details`
 
