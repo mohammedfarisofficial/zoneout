@@ -23,8 +23,8 @@ import { SIGNIN_WITH_GOOGLE } from "../../constants/signin-methods";
 import { findCampusById, findCampusByUserLocation } from "../../helpers/campus";
 import { generateRefreshTokens, getUser } from "../../helpers/auth-helper";
 import { UserCampus } from "../../models/UserCampus";
-import { getUserCampus } from "../../helpers/campus-helper";
-import { FULL_ACCESS_LEVEL } from "../../constants/access-levels";
+import { getCampusUsers, getUserCampus } from "../../helpers/campus-helper";
+import { BASIC_ACCESS_LEVEL, FULL_ACCESS_LEVEL } from "../../constants/access-levels";
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -152,9 +152,17 @@ export const verifyOTP = async (req: Request, res: Response) => {
          const access_token = user.createAccessToken();
          const refresh_token = user.createRefreshToken();
 
+         const userCampusRecord = await getUserCampus(userId, FULL_ACCESS_LEVEL);
+         const user_campus = {
+            _id: userCampusRecord.campus._id,
+            coordinates: userCampusRecord.campus.polygon.coordinates,
+            type: userCampusRecord.campus.polygon.type,
+            name: userCampusRecord.campus.name,
+         };
+
          return res.status(200).json({
-            message: "Account already exist!",
             user: loggedUser,
+            user_campus,
             account_status: VERIFIED_ACCOUNT,
             tokens: { access_token, refresh_token },
          });
@@ -248,12 +256,22 @@ export const setDOB = async (req: Request, res: Response) => {
       delete loggedUser.otp_code;
       delete loggedUser.otp_expiry;
 
+      console.log(process.env.ACCESS_TOKEN_EXPIRY);
+
       const access_token = user.createAccessToken();
       const refresh_token = user.createRefreshToken();
 
+      const userCampusRecord = await getUserCampus(userId, FULL_ACCESS_LEVEL);
+      const user_campus = {
+         _id: userCampusRecord.campus._id,
+         coordinates: userCampusRecord.campus.polygon.coordinates,
+         type: userCampusRecord.campus.polygon.type,
+         name: userCampusRecord.campus.name,
+      };
+
       return res.status(200).json({
-         message: "Account created successfully",
          user: loggedUser,
+         user_campus,
          account_status: VERIFIED_ACCOUNT,
          tokens: { access_token, refresh_token },
       });
@@ -290,8 +308,8 @@ export const setUserCampus = async (req: Request, res: Response) => {
          { new: true }
       );
       const userCampus = new UserCampus({
-         userId,
-         campusId: updatedUser.campus,
+         user: userId,
+         campus: updatedUser.campus,
       });
       await userCampus.save();
       return res.status(200).json({ user: updatedUser });
@@ -336,12 +354,22 @@ export const oauthUser = async (req: Request, res: Response) => {
       if (existingAccount) {
          if (existingAccount.signin_method === SIGNIN_WITH_GOOGLE) {
             const existingUser = existingAccount.toObject();
+
             const access_token = existingAccount.createAccessToken();
             const refresh_token = existingAccount.createRefreshToken();
+
+            const userCampusRecord = await getUserCampus(existingAccount._id, FULL_ACCESS_LEVEL);
+            const user_campus = {
+               _id: userCampusRecord.campus._id,
+               coordinates: userCampusRecord.campus.polygon.coordinates,
+               type: userCampusRecord.campus.polygon.type,
+               name: userCampusRecord.campus.name,
+            };
 
             return res.status(200).json({
                message: "Account already exist!",
                user: existingUser,
+               user_campus,
                account_status: VERIFIED_ACCOUNT,
                tokens: { access_token, refresh_token },
             });
@@ -401,18 +429,15 @@ export const refreshToken = async (req: Request, res: Response) => {
 
 export const getUserDetails = async (req: Request, res: Response) => {
    const { userId } = req.user; // Params checking
-   if (!userId) {
-      return res.status(400).json({ error: "Missing required parameters" });
-   }
    try {
       const user = await getUser(userId, FULL_ACCESS_LEVEL);
       const userCampusRecord = await getUserCampus(userId, FULL_ACCESS_LEVEL);
+      // const getCampusUsersRecords = await getCampusUsers(user.campus, BASIC_ACCESS_LEVEL);
       const user_campus = {
-         _id: userCampusRecord.campusId._id,
-         coordinates: userCampusRecord.campusId.polygon.coordinates,
-         type: userCampusRecord.campusId.polygon.type,
-         name: userCampusRecord.campusId.name,
-         joinedAt: userCampusRecord.joinedAt,
+         _id: userCampusRecord.campus._id,
+         coordinates: userCampusRecord.campus.polygon.coordinates,
+         type: userCampusRecord.campus.polygon.type,
+         name: userCampusRecord.campus.name,
       };
       res.status(200).json({ user, user_campus });
    } catch (error: unknown) {

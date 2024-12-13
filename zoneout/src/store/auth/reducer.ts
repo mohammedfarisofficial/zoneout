@@ -14,7 +14,6 @@ interface UserCampus {
   coordinates: number[][][] | number[][][][];
   type: "Polygon" | "MultiPolygon";
   name: string;
-  joinedAt: Date;
 }
 interface AuthState {
   isLogged: boolean;

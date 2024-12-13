@@ -23,6 +23,7 @@ export default (app: Router) => {
    router.post("/set-campus", setUserCampus);
    router.post("/refresh-token", refreshToken);
    router.get("/user-details", withAuth, getUserDetails);
+   
    // Social Login
    router.post("/oauth", oauthUser);
 

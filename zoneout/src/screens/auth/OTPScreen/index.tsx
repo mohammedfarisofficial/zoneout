@@ -51,6 +51,8 @@ const OTPScreen = ({ navigation, route }: any) => {
               });
               const {
                 tokens: { access_token, refresh_token },
+                user,
+                user_campus,
               } = data;
               if (!access_token || !refresh_token) {
                 return;
@@ -59,7 +61,8 @@ const OTPScreen = ({ navigation, route }: any) => {
               tokenStorage.set("refresh_token", refresh_token);
 
               appStorage.setItem("isLogged", "true");
-              dispatch(setLogged(data.user));
+
+              dispatch(setLogged({ user, user_campus }));
             } catch (error) {
               console.error("Error during login:", error);
             }

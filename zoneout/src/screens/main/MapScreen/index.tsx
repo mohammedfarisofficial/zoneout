@@ -250,11 +250,6 @@ const MapScreen = ({ navigation }: any) => {
   const { collegeRegion } = useSelector((state: RootState) => state.data);
   const { authUser, userCampus } = useSelector((state: RootState) => state.auth);
 
-
-  console.log("userCampus",userCampus)
-
-  console.log("authUser.connections", authUser?.connections);
-
   const cameraRef = useRef<Camera | null>(null);
   const createZoneModalRef = useRef<BottomSheet>(null);
   const viewZoneModalRef = useRef<BottomSheet>(null);
@@ -325,6 +320,8 @@ const MapScreen = ({ navigation }: any) => {
   //   );
   //     })()
   // }, []);
+
+  console.log("authUser", authUser);
 
   const updateUserPosition = (position: any) => {
     // console.log("position.coords",position.coords);
@@ -571,6 +568,20 @@ const MapScreen = ({ navigation }: any) => {
             alignItems: "center",
           }}></View>
       </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => navigation.navigate(ROUTES.MAIN, { screen: ROUTES.MAIN_NOTIFICATION })}
+        style={{ position: "absolute", top: 200, right: 10, zIndex: 99 }}
+        activeOpacity={0.5}>
+        <View
+          style={{
+            width: scale(32),
+            height: scale(32),
+            backgroundColor: "gray",
+            borderRadius: 50,
+            justifyContent: "center",
+            alignItems: "center",
+          }}></View>
+      </TouchableOpacity>
       <TouchableOpacity onPress={handleLogout} style={{ position: "absolute", top: 50, left: 10, zIndex: 99 }} activeOpacity={0.5}>
         <View
           style={{
@@ -584,7 +595,7 @@ const MapScreen = ({ navigation }: any) => {
       </TouchableOpacity>
 
       <TouchableOpacity
-        onPress={() => navigation.navigate(ROUTES.MAIN, { screen: ROUTES.MAIN_COLLEGE_DETAILS })}
+        onPress={() => navigation.navigate(ROUTES.MAIN, { screen: ROUTES.MAIN_CAMPUS_DETAILS })}
         style={{ position: "absolute", top: 50, left: 60, zIndex: 99 }}
         activeOpacity={0.5}>
         <View

@@ -75,8 +75,8 @@ export const setDOB = async (data: { userId: string; dob: Date }) => {
     console.log("URL:", SERVER_URL + ENDPOINTS.AUTH_SET_DOB);
 
     return { success: true, data: response.data };
-  } catch (error) {
-    console.log("Something went wrong!!");
+  } catch (error:any) {
+    console.log("Something went wrong!!",error.response.data.details);
     return { error: "An unexpected error occurred" };
   }
 };

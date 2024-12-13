@@ -1,0 +1,3 @@
+export const NOTIFICATION_TYPE_CONNECTION_REQUEST            = 1
+
+export const NOTIFICATION_STATUS_CONNECTION_INVITE           = 1

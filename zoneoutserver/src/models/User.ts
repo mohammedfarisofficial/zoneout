@@ -33,7 +33,7 @@ export interface IUserDocument extends Document {
 // Define the User Schema
 const UserSchema: Schema<IUserDocument> = new Schema(
    {
-      username: { type: String, unique: true },
+      username: { type: String, unique: true, sparse: true },
       email: { type: String, required: true, unique: true },
       password: { type: String },
       profile_picture: { type: String },
@@ -62,7 +62,13 @@ const UserSchema: Schema<IUserDocument> = new Schema(
       // Campus
       campus: { type: Schema.Types.ObjectId, ref: "Campus" },
    },
-   { versionKey: false }
+   {
+      versionKey: false,
+      timestamps: {
+         createdAt: "created_at",
+         updatedAt: "updated_at",
+      },
+   }
 );
 
 // Index for geospatial queries
@@ -70,7 +76,7 @@ UserSchema.index({ location: "2dsphere" });
 
 // Define Methods
 UserSchema.methods.createAccessToken = function (): string {
-   return jwt.sign({ userId: this._id, username: this.username }, process.env.JWT_SECRET!, {
+   return jwt.sign({ userId: this._id }, process.env.JWT_SECRET!, {
       expiresIn: process.env.ACCESS_TOKEN_EXPIRY!,
    });
 };

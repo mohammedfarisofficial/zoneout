@@ -54,15 +54,14 @@ const WelcomeScreen = ({ navigation }: any) => {
           if (data.account_status === VERIFIED_ACCOUNT) {
             if (data.user.account_progression === SELECT_DOB_COMPLETED || data.user.account_progression === ACCOUNT_CREATED) {
               // SignIn
-              // SignIn
               try {
-                console.log("data", data);
                 navigation.reset({
                   index: 0,
                   routes: [{ name: ROUTES.AUTH_WELCOME }],
                 });
                 const {
                   tokens: { access_token, refresh_token },
+                  user,
                 } = data;
                 if (!access_token || !refresh_token) {
                   return;
@@ -71,7 +70,7 @@ const WelcomeScreen = ({ navigation }: any) => {
                 tokenStorage.set("refresh_token", refresh_token);
 
                 appStorage.setItem("isLogged", "true");
-                dispatch(setLogged(data.user));
+                dispatch(setLogged({ user }));
               } catch (error) {
                 console.error("Error during login:", error);
               }

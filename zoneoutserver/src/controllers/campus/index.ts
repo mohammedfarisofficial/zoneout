@@ -2,6 +2,9 @@ import { Request, Response } from "express";
 import fs from "fs";
 import path from "path";
 import Campus from "../../models/Campus";
+import { getUser } from "../../helpers/auth-helper";
+import { BASIC_ACCESS_LEVEL } from "../../constants/access-levels";
+import { getCampusUsers } from "../../helpers/campus-helper";
 
 export const loadCampus = async (req: Request, res: Response) => {
    try {
@@ -137,13 +140,11 @@ export const loadOneCampus = async (req: Request, res: Response) => {
          try {
             const newCampus = new Campus(campusData);
             await newCampus.save();
-            return res
-               .status(201)
-               .json({
-                  success: true,
-                  message: "Campus data uploaded successfully",
-                  data: newCampus,
-               });
+            return res.status(201).json({
+               success: true,
+               message: "Campus data uploaded successfully",
+               data: newCampus,
+            });
          } catch (saveError) {
             console.error(`Error saving campus ${campusData.name}:`, saveError);
          }
@@ -153,5 +154,22 @@ export const loadOneCampus = async (req: Request, res: Response) => {
    } catch (error) {
       console.error("Error uploading campus data:", error);
       return res.status(500).json({ error: "Internal server error" });
+   }
+};
+
+export const getCampusUsersDetails = async (req: Request, res: Response) => {
+   try {
+      const { userId } = req.user;
+      const user = await getUser(userId, BASIC_ACCESS_LEVEL);
+      const campusUsers = await getCampusUsers(user.campus, BASIC_ACCESS_LEVEL);
+      console.log(campusUsers);
+      if (!campusUsers) {
+         return res.status(400).json({ type: 1, message: "No campus record found for the user" });
+      }
+      return res.status(200).json({ campus_users: campusUsers });
+   } catch (error: unknown) {
+      return res
+         .status(500)
+         .json({ error: "Error fetching user", details: (error as Error).message });
    }
 };

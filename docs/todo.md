@@ -24,5 +24,12 @@
     add joined at, create new endpoint for final step for user reg for selecting campus.
 [ ] Create button for refresh the location for call api "check-college"
 
+<!-- 13/11/2024 -->
+[X] Create API For campus users
+[X] Display Campus User in Campus users screen
+[X] Create API for notification
+[X] Connect connection request to notification
+[X] Display connections and button for sending connection
+[ ] Display list of user notifications
 
 67587ee21e93d4cab11402c5

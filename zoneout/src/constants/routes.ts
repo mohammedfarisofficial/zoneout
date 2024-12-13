@@ -15,7 +15,8 @@ export const SIGN_UP_SET_DOB                    = `${SIGN_UP}-set-dob`
 export const MAIN_MAP                           = `${MAIN}-map`
 export const MAIN_ZONE_DETAILS                  = `${MAIN}-zone-details`
 export const MAIN_USER_DETAILS                  = `${MAIN}-user-details`
-export const MAIN_COLLEGE_DETAILS               = `${MAIN}-college-details`
+export const MAIN_CAMPUS_DETAILS                = `${MAIN}-campus-details`
+export const MAIN_NOTIFICATION                  = `${MAIN}-notification`
 
 export const ACCOUNT_HOME                       = `${ACCOUNT}-home`
 export const ACCOUNT_NOTIFICATION               = `${ACCOUNT}-notification`

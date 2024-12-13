@@ -63,7 +63,7 @@ export const getUser = async (userId: string, accessLevel: number) => {
             selectFields = "";
             break;
          case BASIC_ACCESS_LEVEL:
-            selectFields = "email";
+            selectFields = "email campus";
             break;
          case LIMITED_ACCESS_LEVEL:
             selectFields = "profile_picture email";

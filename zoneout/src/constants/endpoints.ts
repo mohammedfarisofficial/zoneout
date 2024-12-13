@@ -1,6 +1,8 @@
 export const AUTH                       = "/auth"
 export const EVENTS                     = "/events"
 export const CONNECTION                 = "/connection"
+export const NOTIFICATIONS              = "/notification"
+export const CAMPUS                     = "/campus"
 
 export const AUTH_SIGNUP                = `${AUTH}/sign-up`
 export const AUTH_VERIFY_OTP            = `${AUTH}/verify-otp`
@@ -14,5 +16,7 @@ export const AUTH_REFRESH_TOKEN         = `${AUTH}/refresh-token`
 
 export const EVENTS_ALL                 = `${EVENTS}/all`
 
-// export const CONNECTION_DETAILS         = `${CONNECTION}`
+export const CAMPUS_USERS               = `${CAMPUS}/campus-users`
+
+export const CONNECTION_REQUEST         = `${CONNECTION}/request`
 

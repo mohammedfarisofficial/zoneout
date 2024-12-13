@@ -1,6 +1,12 @@
 import { Request, Response } from "express";
 import User from "../../models/User";
 
+import { setConnectionNotification } from "../../helpers/notification-helper";
+import {
+   NOTIFICATION_STATUS_CONNECTION_INVITE,
+   NOTIFICATION_TYPE_CONNECTION_REQUEST,
+} from "../../constants/notification";
+
 export const connectionRequest = async (req: Request, res: Response) => {
    const { userId } = req.user;
    const { receiverId } = req.body;
@@ -21,6 +27,20 @@ export const connectionRequest = async (req: Request, res: Response) => {
       // Add the connection request
       await User.updateOne({ _id: userId }, { $addToSet: { sent_requests: receiverId } });
       await User.updateOne({ _id: receiverId }, { $addToSet: { received_requests: userId } });
+
+      // Send Push Notification
+
+      // Send Notification
+      const connectionNotification = {
+         user: receiverId,
+         type: NOTIFICATION_TYPE_CONNECTION_REQUEST,
+         data: {
+            senderId: userId,
+            message: "You have a new friend request",
+            status: NOTIFICATION_STATUS_CONNECTION_INVITE,
+         },
+      };
+      await setConnectionNotification(connectionNotification);
 
       res.status(200).send({ message: "Connection request sent successfully." });
    } catch (error) {
