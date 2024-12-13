@@ -10,7 +10,7 @@ import Button from "@components/ui/button";
 
 import { requestLocationPermission } from "src/utils/geolocation";
 
-import { checkCollege, setCampus } from "@helper/zoneout-api";
+import { checkCampus, setCampus } from "@helper/zoneout-api";
 import { useAppDispatch } from "../../../store/index";
 
 import * as ROUTES from "@constants/routes";
@@ -58,14 +58,14 @@ const SelectCollegeScreen = ({ navigation, route }: any) => {
   useEffect(() => {
     (async () => {
       const formData = { userId, coords: userCoords };
-      const { success, error, data } = await checkCollege(formData);
+      const { success, error, data } = await checkCampus(formData);
 
       if (error) {
         console.log("Something went wrong!!");
         return;
       }
       if (success && data) {
-        setCollege(data.college);
+        setCollege(data.campus);
       }
     })();
   }, [userCoords]);

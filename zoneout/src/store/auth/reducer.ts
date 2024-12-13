@@ -9,22 +9,33 @@ interface AuthUser {
   _id: string;
   connections: [Connection] | [];
 }
+interface UserCampus {
+  _id: string;
+  coordinates: number[][][] | number[][][][];
+  type: "Polygon" | "MultiPolygon";
+  name: string;
+  joinedAt: Date;
+}
 interface AuthState {
   isLogged: boolean;
   authUser: AuthUser | null;
+  userCampus: any;
 }
 const initialState: AuthState = {
   isLogged: false,
   authUser: null,
+  userCampus: null,
 };
 
 const authSlice = createSlice({
   name: "authSlice",
   initialState,
   reducers: {
-    setLogged: (state, action: PayloadAction<AuthUser>) => {
+    setLogged: (state, action) => {
+      const { user, user_campus } = action.payload;
       state.isLogged = true;
-      state.authUser = action.payload;
+      state.authUser = user;
+      state.userCampus = user_campus;
     },
     logout: state => {
       state.isLogged = false;

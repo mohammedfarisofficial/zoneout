@@ -41,7 +41,7 @@ export const verifyOTP = async (data: { userId: string }) => {
   }
 };
 
-export const checkCollege = async (data: { userId: string; coords: { lat: number; lng: number } }) => {
+export const checkCampus = async (data: { userId: string; coords: { lat: number; lng: number } }) => {
   console.log("data", data);
   try {
     const response = await axios.post(SERVER_URL + ENDPOINTS.AUTH_CHECK_COLLEGE, data);

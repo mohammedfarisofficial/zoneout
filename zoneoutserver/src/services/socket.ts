@@ -26,7 +26,7 @@ export const initSocket = (server: ReturnType<typeof createServer>) => {
                const { user_id, coords } = payload;
                const { latitude, longitude } = coords;
 
-               console.log("User location update : ", user_id, coords);
+               // console.log("User location update : ", user_id, coords);
 
                // Generate geohash
                const hash = await geohashEncode(latitude, longitude);

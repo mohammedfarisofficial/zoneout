@@ -5,18 +5,19 @@ import { NavigationContainer } from "@react-navigation/native";
 import { LogBox } from "react-native";
 import { PortalProvider } from "@gorhom/portal";
 
-import AuthStackNavigator from "src/navigation/AuthStackNavigator";
-import MainBottomTabNavigator from "src/navigation/main/MainBottomTabNavigator";
+import AuthStackNavigator from "@navigation/AuthStackNavigator";
+import MainBottomTabNavigator from "@navigation/main/MainBottomTabNavigator";
 
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { RootState, store } from "@store/index";
-import Loader from "@components/ui/loader";
 import { useEffect } from "react";
 import { appStorage } from "@services/mmkv-storage";
 import { setLogged } from "@store/auth/reducer";
 import { handleLogout } from "@store/auth/action";
 import { getUserDetails } from "@helper/zoneout-api";
 import { navigationRef } from "@components/custom-tabbar";
+
+import Loader from "@components/ui/loader";
 
 LogBox.ignoreLogs(["Sending `onAnimatedValueUpdate` with no listeners registered."]);
 
@@ -40,8 +41,9 @@ const AppContent = () => {
           return;
         }
         if (success && data) {
-          console.log("User Details :", data.user);
-          store.dispatch(setLogged(data.user));
+          console.log("User Details :", data);
+          const { user, user_campus } = data;
+          store.dispatch(setLogged({ user, user_campus }));
         }
       } else {
         handleLogout();

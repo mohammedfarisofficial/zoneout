@@ -5,6 +5,7 @@ type TInput = {
 };
 export default ({ db }: TInput) => {
    const connect = async () => {
+      mongoose.pluralize(null);
       mongoose
          .connect(db)
          .then(() => {

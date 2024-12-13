@@ -19,8 +19,8 @@
 [X] Uploaded Campus data to mongoDB
 [X] Finding inside or outside the campus
 
-<!-- 00/11/2024 -->
-[ ] Register user with campus id create UserCampus anothe modal
+<!-- 12/11/2024 -->
+[X] Register user with campus id create UserCampus anothe modal
     add joined at, create new endpoint for final step for user reg for selecting campus.
 [ ] Create button for refresh the location for call api "check-college"
 

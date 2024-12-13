@@ -1,7 +1,7 @@
-import { Request, Response } from "express";
+import { Request, response, Response } from "express";
 import { OAuth2Client } from "google-auth-library";
 
-import User from "../../models/User";
+import User, { IUserDocument } from "../../models/User";
 
 import { isValidEmail, isValidPassword } from "../../utils/validation";
 import { hashPassword } from "../../utils/bcrypt";
@@ -21,7 +21,10 @@ import { SIGNIN_WITH_GOOGLE } from "../../constants/signin-methods";
 
 // Helpers
 import { findCampusById, findCampusByUserLocation } from "../../helpers/campus";
-import { findUserById, generateRefreshTokens } from "../../helpers/auth";
+import { generateRefreshTokens, getUser } from "../../helpers/auth-helper";
+import { UserCampus } from "../../models/UserCampus";
+import { getUserCampus } from "../../helpers/campus-helper";
+import { FULL_ACCESS_LEVEL } from "../../constants/access-levels";
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -139,6 +142,7 @@ export const verifyOTP = async (req: Request, res: Response) => {
    // Verify OTP code
    if (otp_code === user.otp_code) {
       if (user.account_progression === ACCOUNT_CREATED) {
+         // User exist
          const loggedUser = user.toObject();
          // Remove sensitive data
          delete loggedUser.password;
@@ -194,7 +198,7 @@ export const checkCampus = async (req: Request, res: Response) => {
          console.log("User is inside a campus:", campus.name);
          return res.status(200).json({
             message: "User is inside a campus",
-            college: {
+            campus: {
                _id: campus._id,
                coordinates: campus.polygon.coordinates,
                type: campus.polygon.type,
@@ -232,8 +236,12 @@ export const setDOB = async (req: Request, res: Response) => {
          { new: true }
       );
       if (!user) {
-         return { status: 400, message: "User not found" };
+         return res.status(400).json({ message: "User not found" });
       }
+      // if (!user.campus) {
+      //    return res.status(400).json({ message: "User campus not found" });
+      // }
+
       const loggedUser = user.toObject();
       // Remove sensitive data
       delete loggedUser.password;
@@ -268,7 +276,7 @@ export const setUserCampus = async (req: Request, res: Response) => {
    }
    try {
       const campus = await findCampusById(campusId);
-      const user = await findUserById(userId);
+      const user = await getUser(userId, FULL_ACCESS_LEVEL);
 
       if (!campus) {
          return res.status(400).json("Invalid campusId!");
@@ -281,6 +289,11 @@ export const setUserCampus = async (req: Request, res: Response) => {
          { campus: campusId, account_progression: SELECT_COLLEGE_COMPLETED },
          { new: true }
       );
+      const userCampus = new UserCampus({
+         userId,
+         campusId: updatedUser.campus,
+      });
+      await userCampus.save();
       return res.status(200).json({ user: updatedUser });
    } catch (error) {
       return res
@@ -387,24 +400,21 @@ export const refreshToken = async (req: Request, res: Response) => {
 };
 
 export const getUserDetails = async (req: Request, res: Response) => {
-   const { userId } = req.user;
-
-   // Params checking
+   const { userId } = req.user; // Params checking
    if (!userId) {
-      return res.status(400).json({
-         error: "Missing required parameters",
-      });
+      return res.status(400).json({ error: "Missing required parameters" });
    }
    try {
-      const user = await User.findById(userId).populate("connections", "email location");
-      const formattedUser = user.toObject();
-      // Remove sensitive data
-      delete formattedUser.password;
-      delete formattedUser.otp_code;
-      delete formattedUser.otp_expiry;
-      delete formattedUser.dob;
-
-      res.status(200).json({ user: formattedUser });
+      const user = await getUser(userId, FULL_ACCESS_LEVEL);
+      const userCampusRecord = await getUserCampus(userId, FULL_ACCESS_LEVEL);
+      const user_campus = {
+         _id: userCampusRecord.campusId._id,
+         coordinates: userCampusRecord.campusId.polygon.coordinates,
+         type: userCampusRecord.campusId.polygon.type,
+         name: userCampusRecord.campusId.name,
+         joinedAt: userCampusRecord.joinedAt,
+      };
+      res.status(200).json({ user, user_campus });
    } catch (error: unknown) {
       return res
          .status(500)

@@ -31,36 +31,39 @@ export interface IUserDocument extends Document {
 }
 
 // Define the User Schema
-const UserSchema: Schema<IUserDocument> = new Schema({
-   username: { type: String, unique: true },
-   email: { type: String, required: true, unique: true },
-   password: { type: String },
-   profile_picture: { type: String },
-   socket_id: { type: String },
-   geohash: { type: String },
-   signin_method: { type: Number, default: 0 },
-   account_progression: { type: Number },
-   role: { type: Number, default: 0 },
-   otp_code: { type: String, required: false },
-   otp_expiry: { type: Date, required: false },
-   fcm_token: [{ type: String }],
-   dob: { type: Date },
-   location: {
-      type: {
-         type: String,
-         enum: ["Point"],
+const UserSchema: Schema<IUserDocument> = new Schema(
+   {
+      username: { type: String, unique: true },
+      email: { type: String, required: true, unique: true },
+      password: { type: String },
+      profile_picture: { type: String },
+      socket_id: { type: String },
+      geohash: { type: String },
+      signin_method: { type: Number, default: 0 },
+      account_progression: { type: Number },
+      role: { type: Number, default: 0 },
+      otp_code: { type: String, required: false },
+      otp_expiry: { type: Date, required: false },
+      fcm_token: [{ type: String }],
+      dob: { type: Date },
+      location: {
+         type: {
+            type: String,
+            enum: ["Point"],
+         },
+         coordinates: {
+            type: [Number],
+         },
       },
-      coordinates: {
-         type: [Number],
-      },
+      // Connections
+      sent_requests: [{ type: Schema.Types.ObjectId, ref: "User" }],
+      received_requests: [{ type: Schema.Types.ObjectId, ref: "User" }],
+      connections: [{ type: Schema.Types.ObjectId, ref: "User" }],
+      // Campus
+      campus: { type: Schema.Types.ObjectId, ref: "Campus" },
    },
-   // Connections
-   sent_requests: [{ type: Schema.Types.ObjectId, ref: "User" }],
-   received_requests: [{ type: Schema.Types.ObjectId, ref: "User" }],
-   connections: [{ type: Schema.Types.ObjectId, ref: "User" }],
-   // Campus 
-   campus: { type: Schema.Types.ObjectId, ref: "Campus" }
-});
+   { versionKey: false }
+);
 
 // Index for geospatial queries
 UserSchema.index({ location: "2dsphere" });

@@ -28,8 +28,7 @@ import { styles } from "./styles";
 import { Slider } from "@miblanchard/react-native-slider";
 
 // import Geolocation from "@react-native-community/geolocation";
-import Geolocation from 'react-native-geolocation-service';
-
+import Geolocation from "react-native-geolocation-service";
 
 import { REACT_APP_MAPBOX_ACCESS_TOKEN } from "@env";
 
@@ -249,7 +248,10 @@ const MapScreen = ({ navigation }: any) => {
   const { isActive: isUsersVisible, onStart: visibleUsers, onEnd: hideUsers } = useSwitch(true);
 
   const { collegeRegion } = useSelector((state: RootState) => state.data);
-  const { authUser } = useSelector((state: RootState) => state.auth);
+  const { authUser, userCampus } = useSelector((state: RootState) => state.auth);
+
+
+  console.log("userCampus",userCampus)
 
   console.log("authUser.connections", authUser?.connections);
 
@@ -282,9 +284,9 @@ const MapScreen = ({ navigation }: any) => {
     (async () => {
       const hasLocationPermission = await requestLocationPermission();
       if (!hasLocationPermission) {
-        console.log("No permission")
-        return
-      };
+        console.log("No permission");
+        return;
+      }
       const watchId = Geolocation.watchPosition(
         updateUserPosition,
         (error: any) => {
@@ -323,11 +325,9 @@ const MapScreen = ({ navigation }: any) => {
   //   );
   //     })()
   // }, []);
-  
-  
 
   const updateUserPosition = (position: any) => {
-    console.log("position.coords",position.coords);
+    // console.log("position.coords",position.coords);
     const { longitude, latitude } = position.coords;
 
     if (authUser === null || !latitude || !longitude) {
@@ -533,70 +533,70 @@ const MapScreen = ({ navigation }: any) => {
       </Portal>
 
       <TouchableOpacity onPress={() => setEvents([])} style={{ position: "absolute", top: 50, right: 10, zIndex: 99 }} activeOpacity={0.5}>
-          <View
-            style={{
-              width: scale(32),
-              height: scale(32),
-              backgroundColor: "gray",
-              borderRadius: 50,
-              justifyContent: "center",
-              alignItems: "center",
-            }}></View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => (isUsersVisible ? hideUsers() : visibleUsers())}
-          style={{ position: "absolute", top: 100, right: 10, zIndex: 99 }}
-          activeOpacity={0.5}>
-          <View
-            style={{
-              width: scale(32),
-              height: scale(32),
-              backgroundColor: "gray",
-              borderRadius: 50,
-              justifyContent: "center",
-              alignItems: "center",
-            }}></View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => (isZoneVisible ? hideZone() : visibleZone())}
-          style={{ position: "absolute", top: 150, right: 10, zIndex: 99 }}
-          activeOpacity={0.5}>
-          <View
-            style={{
-              width: scale(32),
-              height: scale(32),
-              backgroundColor: "gray",
-              borderRadius: 50,
-              justifyContent: "center",
-              alignItems: "center",
-            }}></View>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleLogout} style={{ position: "absolute", top: 50, left: 10, zIndex: 99 }} activeOpacity={0.5}>
-          <View
-            style={{
-              width: scale(32),
-              height: scale(32),
-              backgroundColor: "gray",
-              borderRadius: 50,
-              justifyContent: "center",
-              alignItems: "center",
-            }}></View>
-        </TouchableOpacity>
+        <View
+          style={{
+            width: scale(32),
+            height: scale(32),
+            backgroundColor: "gray",
+            borderRadius: 50,
+            justifyContent: "center",
+            alignItems: "center",
+          }}></View>
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => (isUsersVisible ? hideUsers() : visibleUsers())}
+        style={{ position: "absolute", top: 100, right: 10, zIndex: 99 }}
+        activeOpacity={0.5}>
+        <View
+          style={{
+            width: scale(32),
+            height: scale(32),
+            backgroundColor: "gray",
+            borderRadius: 50,
+            justifyContent: "center",
+            alignItems: "center",
+          }}></View>
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => (isZoneVisible ? hideZone() : visibleZone())}
+        style={{ position: "absolute", top: 150, right: 10, zIndex: 99 }}
+        activeOpacity={0.5}>
+        <View
+          style={{
+            width: scale(32),
+            height: scale(32),
+            backgroundColor: "gray",
+            borderRadius: 50,
+            justifyContent: "center",
+            alignItems: "center",
+          }}></View>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={handleLogout} style={{ position: "absolute", top: 50, left: 10, zIndex: 99 }} activeOpacity={0.5}>
+        <View
+          style={{
+            width: scale(32),
+            height: scale(32),
+            backgroundColor: "gray",
+            borderRadius: 50,
+            justifyContent: "center",
+            alignItems: "center",
+          }}></View>
+      </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => navigation.navigate(ROUTES.MAIN, { screen: ROUTES.MAIN_COLLEGE_DETAILS })}
-          style={{ position: "absolute", top: 50, left: 60, zIndex: 99 }}
-          activeOpacity={0.5}>
-          <View
-            style={{
-              width: scale(32),
-              height: scale(32),
-              backgroundColor: "gray",
-              borderRadius: 50,
-              justifyContent: "center",
-              alignItems: "center",
-            }}></View>
-        </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => navigation.navigate(ROUTES.MAIN, { screen: ROUTES.MAIN_COLLEGE_DETAILS })}
+        style={{ position: "absolute", top: 50, left: 60, zIndex: 99 }}
+        activeOpacity={0.5}>
+        <View
+          style={{
+            width: scale(32),
+            height: scale(32),
+            backgroundColor: "gray",
+            borderRadius: 50,
+            justifyContent: "center",
+            alignItems: "center",
+          }}></View>
+      </TouchableOpacity>
 
       {/* Map  */}
       <MapView
@@ -668,7 +668,6 @@ const MapScreen = ({ navigation }: any) => {
 
         {/* <Light style={lightStyle}  /> */}
         {/* Clear events button */}
-        
 
         <Mapbox.Camera
           ref={cameraRef}
@@ -682,8 +681,8 @@ const MapScreen = ({ navigation }: any) => {
         />
 
         {/* Show Current college region  */}
-        {collegeRegion && (
-          <ShapeSource id={`college-region`} shape={collegeRegion}>
+        {userCampus && (
+          <ShapeSource id={`college-region`} shape={userCampus}>
             <FillLayer
               id={`college-region`}
               style={{
@@ -728,9 +727,10 @@ const MapScreen = ({ navigation }: any) => {
         {eventCoords && (
           <>
             {/* Event Marker */}
-            <MarkerView coordinate={eventCoords} 
-               anchor={{ x: 0.5, y: 0.5 }} // Center the marker
-               allowOverlap={true}>
+            <MarkerView
+              coordinate={eventCoords}
+              anchor={{ x: 0.5, y: 0.5 }} // Center the marker
+              allowOverlap={true}>
               <TouchableOpacity
                 style={{
                   backgroundColor: "gray",
