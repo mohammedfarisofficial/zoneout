@@ -6,10 +6,12 @@ import { startLoading, stopLoading } from "@store/ui/reducer";
 
 import Header from "@components/header";
 
-import * as NOTIFICATION_STATUS from "@constants/notification-status";
+import * as NOTIFICATION from "@constants/notification-status";
+import NotificationItem from "@components/notification/notification-item";
 
-interface INotification {
+export interface INotification {
   _id: string;
+  type: number;
   data: {
     status: number;
     requestId: string;
@@ -94,7 +96,7 @@ const NotificationScreen = () => {
       {error && <Text>{error}</Text>}
       {notifications && notifications.length && (
         <FlatList
-          data={[...notifications, ...notifications, ...notifications]}
+          data={notifications}
           scrollEventThrottle={1000 / 60}
           keyExtractor={item => item._id}
           renderItem={({ item: notification }: { item: INotification }) => {
@@ -102,31 +104,24 @@ const NotificationScreen = () => {
               data: { status },
             } = notification;
 
+            // Create Util for selecting color
             let statusColor;
-            if (status === NOTIFICATION_STATUS.REJECTED) {
+            if (status === NOTIFICATION.STATUS_PENDING) {
               statusColor = "pink";
-            } else if (status === NOTIFICATION_STATUS.ACCEPTED) {
+            } else if (status === NOTIFICATION.STATUS_ACCEPTED) {
               statusColor = "darkgray";
             } else {
               statusColor = "lightgray";
             }
             return (
-              <View
-                style={{
-                  width: "100%",
-                  backgroundColor: statusColor,
-                  paddingHorizontal: 20,
-                  alignItems: "flex-end",
-                  marginVertical: 5,
-                }}>
-                <Text>{JSON.stringify(notification)}</Text>
-                {status === NOTIFICATION_STATUS.PENDING && (
-                  <>
-                    <Button onPress={() => connectionRequestAcceptHandler(notification)} title="Accept" />
-                    <Button onPress={() => connectionRequestRejectHandler(notification)} title="Reject" />
-                  </>
-                )}
-              </View>
+              <NotificationItem
+                type={notification.type}
+                status={status}
+                statusColor={statusColor}
+                notification={notification}
+                onAccept={connectionRequestAcceptHandler}
+                onReject={connectionRequestRejectHandler}
+              />
             );
           }}
         />
