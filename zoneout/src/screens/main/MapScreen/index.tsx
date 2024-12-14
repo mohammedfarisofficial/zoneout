@@ -344,33 +344,33 @@ const MapScreen = ({ navigation }: any) => {
 
     sendMessage(message);
   };
-  useEffect(() => {
-    // Function to handle location updates
-    const handleLocationUpdate = (event: any) => {
-      try {
-        const update = JSON.parse(event.data);
-        const { user_id, latitude, longitude } = update.data;
+  // useEffect(() => {
+  //   // Function to handle location updates
+  //   const handleLocationUpdate = (event: any) => {
+  //     try {
+  //       const update = JSON.parse(event.data);
+  //       const { user_id, latitude, longitude } = update.data;
 
-        dispatch(updateConnectionLocation({ user_id, location: [longitude, latitude] }));
-      } catch (error) {
-        console.error("Error parsing WebSocket message:", error);
-      }
-    };
-    // Establish WebSocket connection
-    connectWebSocket();
-    // Attach event listener
-    if (typeof socket !== "undefined") {
-      socket.onmessage = handleLocationUpdate;
-    } else {
-      console.error("WebSocket not initialized properly.");
-    }
+  //       dispatch(updateConnectionLocation({ user_id, location: [longitude, latitude] }));
+  //     } catch (error) {
+  //       console.error("Error parsing WebSocket message:", error);
+  //     }
+  //   };
+  //   // Establish WebSocket connection
+  //   connectWebSocket();
+  //   // Attach event listener
+  //   if (typeof socket !== "undefined") {
+  //     socket.onmessage = handleLocationUpdate;
+  //   } else {
+  //     console.error("WebSocket not initialized properly.");
+  //   }
 
-    // Cleanup on component unmount
-    return () => {
-      console.log("Cleaning up WebSocket...");
-      closeWebSocket();
-    };
-  }, [dispatch]);
+  //   // Cleanup on component unmount
+  //   return () => {
+  //     console.log("Cleaning up WebSocket...");
+  //     closeWebSocket();
+  //   };
+  // }, [dispatch]);
 
   // Create Zone or Map Press Modal
   const openCreateZoneModal = () => {
@@ -651,7 +651,7 @@ const MapScreen = ({ navigation }: any) => {
             </MarkerView>
           ))}
         {/* Users  */}
-        {isUsersVisible &&
+        {/* {isUsersVisible &&
           authUser?.connections.map((connection, index) => {
             if (connection.location) {
               return (
@@ -675,7 +675,7 @@ const MapScreen = ({ navigation }: any) => {
                 </MarkerView>
               );
             }
-          })}
+          })} */}
 
         {/* <Light style={lightStyle}  /> */}
         {/* Clear events button */}

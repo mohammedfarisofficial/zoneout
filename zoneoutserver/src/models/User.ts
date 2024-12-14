@@ -1,7 +1,6 @@
 import { Schema, Document, model, Types } from "mongoose";
 import jwt from "jsonwebtoken";
 
-// Define the User Document interface
 export interface IUserDocument extends Document {
    username: string;
    email: string;
@@ -20,17 +19,12 @@ export interface IUserDocument extends Document {
       type: string;
       coordinates: [number, number];
    };
-   // Connection
-   sent_requests: Types.ObjectId[];
-   received_requests: Types.ObjectId[];
-   connections: Types.ObjectId[];
-   // Campus
+   connections: Types.ObjectId;
    campus?: Types.ObjectId;
    createAccessToken(): string;
    createRefreshToken(): string;
 }
 
-// Define the User Schema
 const UserSchema: Schema<IUserDocument> = new Schema(
    {
       username: { type: String, unique: true, sparse: true },
@@ -56,9 +50,7 @@ const UserSchema: Schema<IUserDocument> = new Schema(
          },
       },
       // Connections
-      sent_requests: [{ type: Schema.Types.ObjectId, ref: "User" }],
-      received_requests: [{ type: Schema.Types.ObjectId, ref: "User" }],
-      connections: [{ type: Schema.Types.ObjectId, ref: "User" }],
+      connections: { type: Schema.Types.ObjectId, ref: "UserConnection" },
       // Campus
       campus: { type: Schema.Types.ObjectId, ref: "Campus" },
    },
@@ -71,7 +63,6 @@ const UserSchema: Schema<IUserDocument> = new Schema(
    }
 );
 
-// Index for geospatial queries
 UserSchema.index({ location: "2dsphere" });
 
 // Define Methods
@@ -87,5 +78,5 @@ UserSchema.methods.createRefreshToken = function (): string {
    });
 };
 
-// Export the model
+
 export default model<IUserDocument>("User", UserSchema);

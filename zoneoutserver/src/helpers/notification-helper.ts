@@ -23,11 +23,23 @@ export const setConnectionNotification = async ({
    }
 };
 
+export const updateConnectionNotification = async (notificationId: string, status: number) => {
+   try {
+      const updatedNotification = await UserNotification.findByIdAndUpdate(
+         notificationId,
+         { $set: { "data.status": status } },
+         { new: true }
+      );
+      return updatedNotification;
+   } catch (error: any) {
+      console.log("Error: In updateConnectionNotification", error.message);
+      return false;
+   }
+};
+
 export const getUserNotifications = async (userId: string) => {
    try {
       const notifications = await UserNotification.find({ user: userId });
-
-      console.log("notifications", notifications);
 
       if (!notifications || !notifications.length) {
          return false;

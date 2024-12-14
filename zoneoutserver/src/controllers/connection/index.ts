@@ -1,13 +1,15 @@
 import { Request, Response } from "express";
 import User from "../../models/User";
 
-import { setConnectionNotification } from "../../helpers/notification-helper";
 import {
-   NOTIFICATION_STATUS_CONNECTION_INVITE,
-   NOTIFICATION_TYPE_CONNECTION_REQUEST,
-} from "../../constants/notification";
+   setConnectionNotification,
+   updateConnectionNotification,
+} from "../../helpers/notification-helper";
+import { NOTIFICATION_TYPE_CONNECTION_REQUEST } from "../../constants/notification";
+import { ConnectionRequestStatus, UserConnectionRequest } from "../../models/UserConnectionRequest";
+import { UserConnection } from "../../models/UserConnection";
 
-export const connectionRequest = async (req: Request, res: Response) => {
+export const sendConnectionRequest = async (req: Request, res: Response) => {
    const { userId } = req.user;
    const { receiverId } = req.body;
 
@@ -15,18 +17,25 @@ export const connectionRequest = async (req: Request, res: Response) => {
       return res.status(400).send({ error: "Sender and receiver IDs are required." });
    }
 
-   try {
-      // Request already exists
-      const sender = await User.findOne({ _id: userId, sent_requests: receiverId });
-      const receiver = await User.findOne({ _id: receiverId, received_requests: userId });
+   if (userId === receiverId) {
+      return res.status(400).send({ error: "You cannot send a connection request to yourself." });
+   }
 
-      if (sender || receiver) {
+   try {
+      const existingRequest = await UserConnectionRequest.findOne({
+         sender: userId,
+         receiver: receiverId,
+      });
+
+      if (existingRequest) {
          return res.status(400).send({ error: "Connection request already exists." });
       }
 
-      // Add the connection request
-      await User.updateOne({ _id: userId }, { $addToSet: { sent_requests: receiverId } });
-      await User.updateOne({ _id: receiverId }, { $addToSet: { received_requests: userId } });
+      const newRequest = await UserConnectionRequest.create({
+         sender: userId,
+         receiver: receiverId,
+         status: ConnectionRequestStatus.PENDING,
+      });
 
       // Send Push Notification
 
@@ -36,100 +45,161 @@ export const connectionRequest = async (req: Request, res: Response) => {
          type: NOTIFICATION_TYPE_CONNECTION_REQUEST,
          data: {
             senderId: userId,
+            requestId: newRequest._id,
             message: "You have a new friend request",
-            status: NOTIFICATION_STATUS_CONNECTION_INVITE,
+            status: ConnectionRequestStatus.PENDING,
          },
       };
       await setConnectionNotification(connectionNotification);
-
-      res.status(200).send({ message: "Connection request sent successfully." });
+      res.status(200).send({
+         message: "Connection request sent successfully.",
+         request: newRequest,
+      });
    } catch (error) {
-      console.error("Error sending connection request:", error);
+      console.error("Error sending user connection request:", error);
       res.status(500).send({ error: "Failed to send connection request." });
    }
 };
-export const acceptConnection = async (req: Request, res: Response) => {
-   // const { userId } = req.user;
-   const { receiverId, userId } = req.body;
 
-   if (!userId || !receiverId) {
-      return res.status(400).send({ error: "Both userId and receiverId are required." });
-   }
+export const acceptConnectionRequest = async (req: Request, res: Response) => {
+   const { userId } = req.user;
+   const { requestId, notificationId } = req.body;
 
-   if (userId === receiverId) {
-      return res
-         .status(400)
-         .send({ error: "You cannot accept a connection request from yourself." });
+   if (!userId || !requestId) {
+      return res.status(400).send({ error: "Request ID and user ID are required." });
    }
 
    try {
-      const sender = await User.findOne({ _id: userId, received_requests: receiverId });
-      const receiver = await User.findOne({ _id: receiverId, sent_requests: userId });
+      const request = await UserConnectionRequest.findOne({
+         _id: requestId,
+         receiver: userId,
+         status: ConnectionRequestStatus.PENDING,
+      });
 
-      if (!sender || !receiver) {
-         return res.status(404).send({ error: "Connection request not found." });
+      if (!request) {
+         return res
+            .status(404)
+            .send({ error: "Connection request not found or already processed." });
       }
 
-      // Remove requests
-      await User.updateOne({ _id: userId }, { $pull: { received_requests: receiverId } });
-      await User.updateOne({ _id: receiverId }, { $pull: { sent_requests: userId } });
+      request.status = ConnectionRequestStatus.ACCEPTED;
+      await request.save();
 
-      // Add to connections
-      await User.updateOne({ _id: userId }, { $addToSet: { connections: receiverId } });
-      await User.updateOne({ _id: receiverId }, { $addToSet: { connections: userId } });
+      // Add connections for both users
+      await UserConnection.updateOne(
+         { user: userId },
+         { $addToSet: { connections: request.sender } },
+         { upsert: true } // Create the document if it doesn't exist
+      );
 
-      res.status(200).send({ message: "Connection request accepted." });
+      await UserConnection.updateOne(
+         { user: request.sender },
+         { $addToSet: { connections: userId } },
+         { upsert: true }
+      );
+
+      const updatedNotification = await updateConnectionNotification(
+         notificationId,
+         ConnectionRequestStatus.ACCEPTED
+      );
+      res.status(200).json({
+         message: "Connection request accepted.",
+         notification: updatedNotification,
+      });
    } catch (error) {
-      console.error("Error accepting connection request:", error);
+      console.error("Error accepting user connection request:", error);
       res.status(500).send({ error: "Failed to accept connection request." });
    }
 };
-export const userConnections = async (req: Request, res: Response) => {
-   const { userId } = req.user;
-   try {
-      const user = await User.findById(userId).populate("connections", "email location");
 
-      if (!user) {
-         return res.status(404).send({ error: "User not found." });
+export const rejectConnectionRequest = async (req: Request, res: Response) => {
+   const { userId } = req.user;
+   const { requestId, notificationId } = req.body;
+
+   if (!userId || !requestId) {
+      return res.status(400).send({ error: "Request ID and user ID are required." });
+   }
+
+   try {
+      const request = await UserConnectionRequest.findOne({
+         _id: requestId,
+         receiver: userId,
+         status: ConnectionRequestStatus.PENDING,
+      });
+
+      if (!request) {
+         return res
+            .status(404)
+            .send({ error: "Connection request not found or already processed." });
       }
 
-      res.status(200).send({ connections: user.connections });
+      request.status = ConnectionRequestStatus.REJECTED;
+      await request.save();
+
+      const updatedNotification = await updateConnectionNotification(
+         notificationId,
+         ConnectionRequestStatus.REJECTED
+      );
+
+      res.status(200).json({
+         message: "Connection request rejected.",
+         notification: updatedNotification,
+      });
    } catch (error) {
-      console.error("Error fetching connections:", error);
-      res.status(500).send({ error: "Failed to fetch connections." });
+      console.error("Error rejecting user connection request:", error);
+      res.status(500).send({ error: "Failed to reject connection request." });
    }
 };
+
+export const userConnections = async (req: Request, res: Response) => {
+   const { userId } = req.user;
+
+   try {
+      const userConnections = await UserConnection.findOne({ user: userId }).populate(
+         "connections",
+         "email location" // Include only necessary fields
+      );
+
+      if (!userConnections || userConnections.connections.length === 0) {
+         return res.status(404).send({ error: "No connections found." });
+      }
+
+      res.status(200).send({ connections: userConnections.connections });
+   } catch (error) {
+      console.error("Error fetching user connections:", error);
+      res.status(500).send({ error: "Failed to fetch user connections." });
+   }
+};
+
 export const getConnectionDetails = async (req: Request, res: Response) => {
    const { connectionId } = req.params;
-   console.log("connectionId", connectionId);
-   // Params checking
+
    if (!connectionId) {
       return res.status(400).json({
-         // type: 1,
-         error: "Missing required parameters",
+         error: "Missing required parameter: connectionId",
       });
    }
 
-   const connectionDetails = await User.findById(connectionId);
-   if (!connectionDetails) {
-      return res.status(404).json({
-         // type: 1,
-         error: "Connection not found!",
+   try {
+      // Find the user details
+      const connectionDetails = await User.findById(connectionId).select(
+         "_id email name location profilePicture"
+      );
+
+      if (!connectionDetails) {
+         return res.status(404).json({
+            error: "Connection not found.",
+         });
+      }
+
+      res.status(200).json({
+         message: "Connection details retrieved successfully.",
+         connection: connectionDetails,
+      });
+   } catch (error) {
+      console.error("Error fetching connection details:", error);
+      res.status(500).json({
+         error: "Failed to fetch connection details.",
       });
    }
-   const formattedConnection = connectionDetails.toObject();
-   // Remove sensitive data
-   delete formattedConnection.password;
-   delete formattedConnection.otp_code;
-   delete formattedConnection.otp_expiry;
-   delete formattedConnection.dob;
-   delete formattedConnection.signin_method;
-   delete formattedConnection.account_progression;
-
-   console.log("connectionDetails", formattedConnection);
-
-   return res.status(200).json({
-      message: "Connection details found!",
-      connection: formattedConnection,
-   });
 };

@@ -30,6 +30,6 @@
 [X] Create API for notification
 [X] Connect connection request to notification
 [X] Display connections and button for sending connection
-[ ] Display list of user notifications
+[X] Display list of user notifications
 
 67587ee21e93d4cab11402c5

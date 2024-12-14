@@ -19,4 +19,6 @@ export const EVENTS_ALL                 = `${EVENTS}/all`
 export const CAMPUS_USERS               = `${CAMPUS}/campus-users`
 
 export const CONNECTION_REQUEST         = `${CONNECTION}/request`
+export const CONNECTION_REJECT          = `${CONNECTION}/reject`
+export const CONNECTION_ACCEPT          = `${CONNECTION}/accept`
 
