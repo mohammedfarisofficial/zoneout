@@ -22,7 +22,7 @@ export const initSocket = (server: ReturnType<typeof createServer>) => {
       const socket_id = uuidv4();
       ws.id = socket_id;
       connections[socket_id] = ws;
-      // console.log("A user connected", ws.id);
+      console.log("A user connected", ws.id);
       ws.on("message", async (message) => {
          try {
             const data = JSON.parse(message.toString());
@@ -32,7 +32,7 @@ export const initSocket = (server: ReturnType<typeof createServer>) => {
                const { user_id, coords } = payload;
                const { latitude, longitude } = coords;
 
-               // console.log("User location update : ", user_id, coords);
+               console.log("User location update : ", user_id, coords);
 
                // Generate geohash
                const hash = await geohashEncode(latitude, longitude);
@@ -45,7 +45,7 @@ export const initSocket = (server: ReturnType<typeof createServer>) => {
                )) as IUserDocument & { connections: IUserDocument[] };
 
                if (!user.connections || user.connections.length === 0) {
-                  // console.log("No Connections!!");
+                  console.log("No Connections!!");
                   return;
                }
 
@@ -66,13 +66,13 @@ export const initSocket = (server: ReturnType<typeof createServer>) => {
                });
             }
          } catch (error) {
-            // // // console.error("Error handling message:", error);
+            // // console.error("Error handling message:", error);
          }
       });
 
       // Handle disconnection
       ws.on("close", () => {
-         // // // console.log("User disconnected", ws.id);
+         // // console.log("User disconnected", ws.id);
          delete connections[ws.id];
       });
    });
