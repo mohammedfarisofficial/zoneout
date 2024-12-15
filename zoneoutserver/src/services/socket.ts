@@ -1,22 +1,28 @@
 import { createServer } from "http";
-import { WebSocketServer } from "ws";
-import { randomUUID } from "crypto";
+import WebSocket, { Server } from "ws";
+import { v4 as uuidv4 } from "uuid";
 import { geohashEncode, geohashNeighbors } from "../utils/geohash";
 
 import User from "../models/User";
 
 import * as SOCKET_EVENTS from "../constants/socket-event";
 
-let wss: WebSocketServer;
+import { IUserDocument } from "../models/User";
+
+export interface ExtendedWebSocket extends WebSocket {
+   id: string;
+}
+
+let wss: Server;
 const connections: { [socketId: string]: WebSocket } = {};
 
 export const initSocket = (server: ReturnType<typeof createServer>) => {
-   wss = new WebSocketServer({ server });
-   wss.on("connection", (ws) => {
-      const socket_id = randomUUID();
+   wss = new Server({ server });
+   wss.on("connection", (ws: ExtendedWebSocket) => {
+      const socket_id = uuidv4();
       ws.id = socket_id;
       connections[socket_id] = ws;
-      console.log("A user connected", ws.id);
+      // console.log("A user connected", ws.id);
       ws.on("message", async (message) => {
          try {
             const data = JSON.parse(message.toString());
@@ -31,13 +37,15 @@ export const initSocket = (server: ReturnType<typeof createServer>) => {
                // Generate geohash
                const hash = await geohashEncode(latitude, longitude);
                await User.findByIdAndUpdate(user_id, {
-                  $set: { location: [longitude, latitude], geohash: hash, socket_id: ws.id },
+                  $set: { location: [longitude, latitude], geohash: hash, socket_id: ws?.id },
                });
 
-               const user = await User.findById(user_id).populate("connections");
+               const user = (await User.findById(user_id).populate(
+                  "connections"
+               )) as IUserDocument & { connections: IUserDocument[] };
 
                if (!user.connections || user.connections.length === 0) {
-                  console.log("No Connections!!");
+                  // console.log("No Connections!!");
                   return;
                }
 
@@ -58,13 +66,13 @@ export const initSocket = (server: ReturnType<typeof createServer>) => {
                });
             }
          } catch (error) {
-            console.error("Error handling message:", error);
+            // // // console.error("Error handling message:", error);
          }
       });
 
       // Handle disconnection
       ws.on("close", () => {
-         console.log("User disconnected", ws.id);
+         // // // console.log("User disconnected", ws.id);
          delete connections[ws.id];
       });
    });

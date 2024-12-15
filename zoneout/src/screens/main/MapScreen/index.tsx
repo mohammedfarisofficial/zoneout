@@ -304,25 +304,25 @@ const MapScreen = ({ navigation }: any) => {
     };
   }, []);
 
-  // useEffect(() => {
-  //     (async ()=> {
-  //       const hasLocationPermission = await requestLocationPermission();
-  //       if (!hasLocationPermission) {
-  //         console.log("No permission")
-  //         return
-  //       };
-  //     Geolocation.watchPosition(
-  //       (position) => {
-  //         console.log(position);
-  //       },
-  //       (error) => {
-  //         // See error code charts below.
-  //         console.log(error.code, error.message);
-  //       },
-  //       { enableHighAccuracy: true, distanceFilter: 0 }
-  //   );
-  //     })()
-  // }, []);
+  useEffect(() => {
+      (async ()=> {
+        const hasLocationPermission = await requestLocationPermission();
+        if (!hasLocationPermission) {
+          console.log("No permission")
+          return
+        };
+      Geolocation.watchPosition(
+        (position) => {
+          console.log(position);
+        },
+        (error) => {
+          // See error code charts below.
+          console.log(error.code, error.message);
+        },
+        { enableHighAccuracy: true, distanceFilter: 0 }
+    );
+      })()
+  }, []);
 
   console.log("authUser", authUser);
 

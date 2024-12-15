@@ -13,6 +13,8 @@
    "author": "",
    "license": "ISC",
    "dependencies": {
+      "@types/ngeohash": "^0.6.8",
+      "@types/ws": "^8.5.13",
       "bcrypt": "^5.1.1",
       "body-parser": "^1.20.3",
       "cors": "^2.8.5",
@@ -26,6 +28,7 @@
       "morgan": "^1.10.0",
       "ngeohash": "^0.6.3",
       "socket.io": "^4.7.5",
+      "uuid": "^11.0.3",
       "ws": "^8.18.0"
    },
    "devDependencies": {

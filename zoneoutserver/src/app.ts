@@ -25,7 +25,7 @@ const startServer = async () => {
    const io = initSocket(server);
    // Attach io to the req object
    app.use((req: Request, res: Response, next: NextFunction) => {
-      req.io = io;
+      app.set('io', io);
       next();
    });
 
