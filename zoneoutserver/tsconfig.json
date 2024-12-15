@@ -15,7 +15,8 @@
       "allowJs": true,
       "noEmit": false,
       "esModuleInterop": true,
-      "skipLibCheck": true
+      "skipLibCheck": true,
+      "types": ["express"]
    },
    "include": ["src/**/*.ts", "src/types/**/*.d.ts"],
    "exclude": ["node_modules", "tests"]
