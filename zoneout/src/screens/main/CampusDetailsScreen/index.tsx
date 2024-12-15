@@ -1,11 +1,15 @@
-import { View, Text, TouchableOpacity, FlatList, Button } from "react-native";
+import { View, Text, FlatList, Button } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useEffect, useState } from "react";
 import { getCampusUsers } from "@helper/campus-helper";
 import { useAppDispatch } from "@store/index";
 import { startLoading, stopLoading } from "@store/ui/reducer";
 
-import Header from "@components/header";
 import { sendConnectionRequest } from "@helper/connection-helper";
+
+import Header from "@components/header";
+
+import * as COLORS from "@constants/colors";
 
 interface CampusUser {
   _id: string;
@@ -65,7 +69,7 @@ const CampusDetailsScreen = () => {
   };
 
   return (
-    <View style={{ paddingTop: 100 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.WHITE }}>
       <Header />
       {error && <Text>{error}</Text>}
       {campusUsers && campusUsers.length && (
@@ -88,7 +92,7 @@ const CampusDetailsScreen = () => {
           )}
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 

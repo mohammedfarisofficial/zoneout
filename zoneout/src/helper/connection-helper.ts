@@ -1,7 +1,7 @@
 import * as ENDPOINTS from "@constants/endpoints";
 import { appAxios } from "@services/api-config";
 
-const SERVER_URL = process.env.REACT_APP_SERVER_URL ?? "http://172.20.10.2:3001";
+const SERVER_URL = "http://172.20.10.2:3001";
 
 export const sendConnectionRequest = async (receiverId: string) => {
   try {

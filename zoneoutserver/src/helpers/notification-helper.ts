@@ -39,7 +39,9 @@ export const updateConnectionNotification = async (notificationId: string, statu
 
 export const getUserNotifications = async (userId: string) => {
    try {
-      const notifications = await UserNotification.find({ user: userId });
+      const notifications = await UserNotification.find({ user: userId })
+         .sort({ updated_at: -1 })
+         .exec();
 
       if (!notifications || !notifications.length) {
          return false;

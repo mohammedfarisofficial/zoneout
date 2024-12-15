@@ -12,7 +12,10 @@ const Tab = createBottomTabNavigator();
 
 const MainBottomTabNavigator: React.FC = () => {
   return (
-    <Tab.Navigator screenOptions={{ headerShown: false }}>
+    <Tab.Navigator
+      screenOptions={{ headerShown: false }}
+      // tabBar={() => null}
+    >
       <Tab.Screen name={ROUTES.MAIN} component={MainStackNavigator} />
       <Tab.Screen name={ROUTES.CHAT} component={ChatStackNavigator} />
       <Tab.Screen name={ROUTES.ACCOUNT} component={AccountStackNavigator} />

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, Fragment, useMemo, useCallback } from "react";
-import { TouchableOpacity, View, Image as RNImage } from "react-native";
+import { TouchableOpacity, View, Image as RNImage, Platform } from "react-native";
 import Mapbox, {
   Camera,
   LocationPuck,
@@ -47,6 +47,7 @@ import { haptic } from "src/utils/haptic";
 
 import * as ROUTES from "@constants/routes";
 import * as FONTS from "@constants/font";
+import * as COLORS from "@constants/colors";
 import * as SOCKET_EVENTS from "@constants/socket-event";
 
 import ZoneDetailsModal from "@components/modals/ZoneDetailsModal";
@@ -60,6 +61,10 @@ import withAuth from "src/hoc/withAuth";
 import { Avatar } from "@constants/images";
 import FastImage from "react-native-fast-image";
 import { scale } from "react-native-size-matters";
+import LongPressMenuModal from "@components/modals/LongPressMenuModal";
+import CreateEvent from "@components/map/create-event";
+import { normalizeHeight, normalizeWidth } from "@utils/scaling";
+import { BlurView } from "@react-native-community/blur";
 
 // import LinearGradient from "react-native-linear-gradient";
 // import { BlurView } from "@react-native-community/blur";
@@ -251,12 +256,10 @@ const MapScreen = ({ navigation }: any) => {
   const { authUser, userCampus } = useSelector((state: RootState) => state.auth);
 
   const cameraRef = useRef<Camera | null>(null);
-  const createZoneModalRef = useRef<BottomSheet>(null);
+  const longPressModalRef = useRef<BottomSheet>(null);
   const viewZoneModalRef = useRef<BottomSheet>(null);
   const userDetailsModalRef = useRef<BottomSheet>(null);
   const watchIdRef = useRef<number | null>(null);
-
-  const snapPoints = useMemo(() => ["30%"], []); // Create Zone or Map Press
 
   const dispatch = useAppDispatch();
 
@@ -374,7 +377,7 @@ const MapScreen = ({ navigation }: any) => {
 
   // Create Zone or Map Press Modal
   const openCreateZoneModal = () => {
-    createZoneModalRef.current?.expand();
+    longPressModalRef.current?.expand();
   };
   const viewZoneModal = () => {
     viewZoneModalRef.current?.expand();
@@ -382,6 +385,7 @@ const MapScreen = ({ navigation }: any) => {
 
   const createZoneSheetHandler = useCallback((index: number) => {
     console.log("handleSheetChanges", index);
+    console.log("Event");
   }, []);
 
   const myCoords: Position = [76.33284407131775, 10.020271744113368];
@@ -407,6 +411,8 @@ const MapScreen = ({ navigation }: any) => {
   };
 
   const createEventHandler = async () => {
+    navigation.navigate(ROUTES.MAIN, { screen: ROUTES.MAIN_CREATE_EVENT });
+    return;
     const polygon = createEventPolygon(eventCoords, radius);
 
     const newEvent = {
@@ -447,6 +453,7 @@ const MapScreen = ({ navigation }: any) => {
   const resetCamera = (coords = NGO_QUARTERS): any => {
     console.log(coords);
     if (!cameraRef.current) return;
+    if (eventCoords) return;
     haptic(2);
     cameraRef.current.setCamera({
       centerCoordinate: coords,
@@ -467,7 +474,7 @@ const MapScreen = ({ navigation }: any) => {
       cameraRef.current.setCamera({
         zoomLevel: 21,
         animationMode: "linearTo",
-        animationDuration: 100,
+        animationDuration: 500,
         pitch: 60,
         heading: 360,
         centerCoordinate: newCoordinates,
@@ -486,12 +493,17 @@ const MapScreen = ({ navigation }: any) => {
     navigation.navigate(ROUTES.MAIN, { screen: ROUTES.MAIN_USER_DETAILS, params: { userId: selectedUser?._id } });
   };
 
+  const eventCreationHanlder = () => {
+    setEventCoords(selectedPoints);
+    longPressModalRef.current?.close();
+  };
+
   return (
     <View style={styles.container}>
       {/* Bottom Modals  */}
       <Portal>
         {/* Create Zone  */}
-        <BottomSheet
+        {/* <BottomSheet
           backgroundStyle={styles.sheetContainer}
           enablePanDownToClose
           snapPoints={snapPoints}
@@ -509,10 +521,17 @@ const MapScreen = ({ navigation }: any) => {
             <Button onPress={() => {}} text="Leave a message" />
             <Button onPress={() => {}} text="Report" />
           </BottomSheetView>
-        </BottomSheet>
+        </BottomSheet> */}
+        <LongPressMenuModal
+          selectedPoints={selectedPoints}
+          onEventCreation={eventCreationHanlder}
+          setEventCoords={setEventCoords}
+          ref={longPressModalRef}
+          onChange={() => {}}
+        />
         {/* Zone Click  */}
         <ZoneDetailsModal
-          onChange={createZoneSheetHandler}
+          onChange={() => {}}
           ref={viewZoneModalRef}
           onClose={() => resetCamera([selectedZoneCoords.latitude, selectedZoneCoords.longitude])}
           isMember={IS_MEMBER}
@@ -523,8 +542,10 @@ const MapScreen = ({ navigation }: any) => {
           onUserDetails={gotoUserDetailsScreen}
           onChange={() => {}}
           onClose={() => {
-            if (selectedUser) resetCamera(selectedUser.location);
-            setSelectedUser(null);
+            if (selectedUser) {
+              resetCamera(selectedUser.location);
+              setSelectedUser(null);
+            }
           }}
         />
       </Portal>
@@ -609,6 +630,40 @@ const MapScreen = ({ navigation }: any) => {
           }}></View>
       </TouchableOpacity>
 
+      <View style={{ position: "absolute", top: 50, width: "100%", zIndex: 9, flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
+        {eventCoords && (
+          <BlurView
+            blurType={Platform.OS === "ios" ? "ultraThinMaterialDark" : "light"}
+            blurAmount={10}
+            overlayColor={COLORS.GRAY_200}
+            reducedTransparencyFallbackColor={COLORS.GRAY_200}
+            style={{
+              borderRadius: 16,
+              justifyContent: "center",
+              alignItems: "center",
+              width: normalizeHeight(50),
+              paddingVertical: normalizeHeight(5),
+            }}>
+            <Typography fontFamily={FONTS.POPPINS_SEMIBOLD} style={{ color: COLORS.WHITE }}>
+              {Math.round(radius)}m
+            </Typography>
+          </BlurView>
+        )}
+      </View>
+
+      {eventCoords && (
+        <CreateEvent
+          radius={radius}
+          onChange={(value: any) => setRadius(value)}
+          onClear={() => {
+            setRadius(10);
+            setEventCoords(null);
+          }}
+          onChangeEnd={() => console.log("trigger")}
+          onCreate={createEventHandler}
+        />
+      )}
+
       {/* Map  */}
       <MapView
         attributionEnabled
@@ -621,9 +676,14 @@ const MapScreen = ({ navigation }: any) => {
         // styleURL="mapbox://styles/mapbox/dark-v11"
         styleURL="mapbox://styles/mapbox/light-v11"
         onMapIdle={e => console.log("Region Changed:", e)}
-        onLongPress={(e: any) => {
+        onPress={(e: any) => {
           if (eventCoords != null) {
             setEventCoords(e.geometry.coordinates);
+            return;
+          }
+        }}
+        onLongPress={(e: any) => {
+          if (eventCoords != null) {
             return;
           }
           setSelectedPoints(e.geometry.coordinates);
@@ -684,7 +744,7 @@ const MapScreen = ({ navigation }: any) => {
           ref={cameraRef}
           zoomLevel={19}
           // maxZoomLevel={19}
-          // minZoomLevel={17.5}
+          minZoomLevel={17.5}
           centerCoordinate={NGO_QUARTERS}
           animationMode={"easeTo"}
           pitch={45}
@@ -778,26 +838,6 @@ const MapScreen = ({ navigation }: any) => {
             radius: 50.0,
           }}
         />
-
-        {eventCoords && (
-          <View
-            style={{
-              position: "absolute",
-              bottom: 100,
-              left: 10,
-              right: 10,
-            }}>
-            <Slider minimumValue={10} maximumValue={100} value={radius} onValueChange={(value: any) => setRadius(value)} />
-            <Button
-              onPress={() => {
-                setRadius(10);
-                setEventCoords(null);
-              }}
-              text="Clear"
-            />
-            <Button onPress={createEventHandler} text="Create" />
-          </View>
-        )}
       </MapView>
     </View>
   );

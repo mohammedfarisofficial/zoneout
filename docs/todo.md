@@ -32,4 +32,5 @@
 [X] Display connections and button for sending connection
 [X] Display list of user notifications
 
-67587ee21e93d4cab11402c5
+[ ] Add notification when user sender notification when receiver make actions
+

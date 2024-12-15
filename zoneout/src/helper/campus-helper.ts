@@ -2,7 +2,7 @@ import { appAxios } from "@services/api-config";
 
 import * as ENDPOINTS from "@constants/endpoints";
 
-const SERVER_URL = process.env.REACT_APP_SERVER_URL ?? "http://172.20.10.2:3001";
+const SERVER_URL = "http://172.20.10.2:3001";
 
 export const getCampusUsers = async () => {
   try {

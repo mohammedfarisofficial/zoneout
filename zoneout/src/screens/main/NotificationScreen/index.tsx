@@ -1,13 +1,20 @@
 import { useEffect, useState } from "react";
-import { View, Text, FlatList, Button } from "react-native";
+import { View, Text, FlatList } from "react-native";
 import { acceptNotification, getUserNotications, rejectNotification } from "@helper/notification-helper";
 import { useAppDispatch } from "@store/index";
 import { startLoading, stopLoading } from "@store/ui/reducer";
 
 import Header from "@components/header";
+import Divider from "@components/ui/divider";
+import Typography from "@components/ui/typography";
+import NotificationItem from "@components/notification/notification-item";
 
 import * as NOTIFICATION from "@constants/notification-status";
-import NotificationItem from "@components/notification/notification-item";
+import * as FONTS from "@constants/font";
+import * as COLORS from "@constants/colors";
+
+import { horizontalSpacing, verticalSpacing } from "../../../styles/global-paddings";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export interface INotification {
   _id: string;
@@ -91,7 +98,7 @@ const NotificationScreen = () => {
   };
 
   return (
-    <View style={{ paddingTop: 100 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.WHITE }}>
       <Header />
       {error && <Text>{error}</Text>}
       {notifications && notifications.length && (
@@ -99,6 +106,12 @@ const NotificationScreen = () => {
           data={notifications}
           scrollEventThrottle={1000 / 60}
           keyExtractor={item => item._id}
+          ListHeaderComponent={
+            <Typography variant="h3" fontFamily={FONTS.POPPINS_SEMIBOLD} style={{ marginBottom: verticalSpacing, marginLeft: horizontalSpacing }}>
+              Notifications
+            </Typography>
+          }
+          ItemSeparatorComponent={Divider}
           renderItem={({ item: notification }: { item: INotification }) => {
             const {
               data: { status },
@@ -119,14 +132,14 @@ const NotificationScreen = () => {
                 status={status}
                 statusColor={statusColor}
                 notification={notification}
-                onAccept={connectionRequestAcceptHandler}
-                onReject={connectionRequestRejectHandler}
+                onAccept={() => connectionRequestAcceptHandler(notification)}
+                onReject={() => connectionRequestRejectHandler(notification)}
               />
             );
           }}
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 

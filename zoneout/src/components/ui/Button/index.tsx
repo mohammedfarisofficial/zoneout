@@ -1,4 +1,4 @@
-import { TextStyle, TouchableOpacity, ViewStyle } from "react-native";
+import { RegisteredStyle, TextStyle, TouchableOpacity, ViewStyle } from "react-native";
 import { styles, containerVariants, textVariants } from "./styles";
 
 import Typography from "@components/ui/typography";
@@ -7,7 +7,7 @@ import * as FONTS from "@constants/font";
 
 interface Props {
   text?: string;
-  textStyle?: TextStyle;
+  textStyle?: TextStyle | RegisteredStyle<TextStyle> | any;
   textSize?: number;
   fontFamily?: string;
   containerStyle?: ViewStyle;
@@ -18,7 +18,7 @@ interface Props {
 const Button = ({ text, textStyle, textSize, onPress, containerStyle, variant = "primary" }: Props) => {
   return (
     <TouchableOpacity activeOpacity={0.8} onPress={onPress} style={[styles.container, containerVariants[variant], containerStyle]}>
-      <Typography fontSize={textSize} fontFamily={FONTS.POPPINS_MEDIUM} style={[styles.textDefault, textStyle, textVariants[variant]]}>
+      <Typography fontSize={textSize} fontFamily={FONTS.POPPINS_MEDIUM} style={[styles.textDefault, textVariants[variant],textStyle]}>
         {text}
       </Typography>
     </TouchableOpacity>

@@ -5,6 +5,7 @@ import ZoneDetailsScreen from "@screens/main/ZoneDetailsScreen";
 import UserDetailsScreen from "@screens/main/UserDetailsScreen";
 import CampusDetailsScreen from "@screens/main/CampusDetailsScreen";
 import NotificationScreen from "@screens/main/NotificationScreen";
+import CreateEventScreen from "@screens/main/CreateEventScreen";
 
 import * as ROUTES from "@constants/routes";
 
@@ -17,7 +18,8 @@ const MainStackNavigator = () => {
       <Stack.Screen name={ROUTES.MAIN_ZONE_DETAILS} options={{ headerShown: false }} component={ZoneDetailsScreen} />
       <Stack.Screen name={ROUTES.MAIN_USER_DETAILS} options={{ headerShown: false }} component={UserDetailsScreen} />
       <Stack.Screen name={ROUTES.MAIN_CAMPUS_DETAILS} options={{ headerShown: false, presentation: "modal" }} component={CampusDetailsScreen} />
-      <Stack.Screen name={ROUTES.MAIN_NOTIFICATION} options={{ headerShown: false, presentation: "modal" }} component={NotificationScreen} />
+      <Stack.Screen name={ROUTES.MAIN_NOTIFICATION} options={{ headerShown: false }} component={NotificationScreen} />
+      <Stack.Screen name={ROUTES.MAIN_CREATE_EVENT} options={{ headerShown: false, presentation: "modal" }} component={CreateEventScreen} />
     </Stack.Navigator>
   );
 };

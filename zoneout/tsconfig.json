@@ -33,6 +33,12 @@
       "@hoc/*": [
         "src/hoc/*"
       ],
+      "@utils/*": [
+        "src/utils/*"
+      ],
+      "@styles/*": [
+        "src/styles/*"
+      ],
    },
 }
 }

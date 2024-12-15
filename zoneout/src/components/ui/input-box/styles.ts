@@ -44,5 +44,6 @@ export const styles = ScaledSheet.create({
     // bottom: "50%",
     marginLeft: "16@vs",
     zIndex: 9,
+    color: COLORS.BLACK,
   },
 });

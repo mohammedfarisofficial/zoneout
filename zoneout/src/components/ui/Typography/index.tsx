@@ -1,24 +1,14 @@
 import React from "react";
 import { RegisteredStyle, Text, TextStyle, Animated } from "react-native";
 import { useTheme } from "@react-navigation/native";
-import { RFValue } from "react-native-responsive-fontsize";
 
-import { styles } from "./styles"
+import { styles } from "./styles";
 
-import * as FONTS from "@constants/font"
+import * as FONTS from "@constants/font";
+import { getFontSize } from "../../../utils/font-scaling";
 
 interface Props {
-  variant?:
-    | "h1"
-    | "h2"
-    | "h3"
-    | "h4"
-    | "h5"
-    | "h6"
-    | "h7"
-    | "h8"
-    | "h9"
-    | "body";
+  variant?: "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "h7" | "h8" | "h9" | "body";
   fontFamily?: string;
   fontSize?: number;
   style?: TextStyle | RegisteredStyle<TextStyle> | any;
@@ -41,47 +31,41 @@ const Typography: React.FC<Props> = ({
   let computedFontSize: number;
   switch (variant) {
     case "h1":
-      computedFontSize = RFValue(fontSize || 22);
+      computedFontSize = getFontSize(fontSize || 22);
       break;
     case "h2":
-      computedFontSize = RFValue(fontSize || 20);
+      computedFontSize = getFontSize(fontSize || 20);
       break;
     case "h3":
-      computedFontSize = RFValue(fontSize || 18);
+      computedFontSize = getFontSize(fontSize || 18);
       break;
     case "h4":
-      computedFontSize = RFValue(fontSize || 16);
+      computedFontSize = getFontSize(fontSize || 16);
       break;
     case "h5":
-      computedFontSize = RFValue(fontSize || 14);
+      computedFontSize = getFontSize(fontSize || 14);
       break;
     case "h6":
-      computedFontSize = RFValue(fontSize || 12);
+      computedFontSize = getFontSize(fontSize || 12);
       break;
     case "h7":
-      computedFontSize = RFValue(fontSize || 12);
+      computedFontSize = getFontSize(fontSize || 12);
       break;
     case "h8":
-      computedFontSize = RFValue(fontSize || 10);
+      computedFontSize = getFontSize(fontSize || 10);
       break;
     case "h9":
-      computedFontSize = RFValue(fontSize || 9);
+      computedFontSize = getFontSize(fontSize || 9);
       break;
     default:
-      computedFontSize = RFValue(fontSize || 12);
+      computedFontSize = getFontSize(fontSize || 12);
   }
 
-  
   return (
     <Animated.Text
       onLayout={onLayout}
-      style={[
-        styles.text,
-        { color: colors.text, fontSize: computedFontSize, fontFamily },
-        style,
-      ]}
-      numberOfLines={numberOfLines !== undefined ? numberOfLines : undefined}
-    >
+      style={[styles.text, { color: colors.text, fontSize: computedFontSize, fontFamily }, style]}
+      numberOfLines={numberOfLines !== undefined ? numberOfLines : undefined}>
       {children}
     </Animated.Text>
   );

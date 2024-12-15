@@ -3,7 +3,7 @@ import { tokenStorage } from "@services/mmkv-storage";
 import { AUTH_REFRESH_TOKEN } from "@constants/endpoints";
 import { handleLogout } from "@store/auth/action";
 
-const SERVER_URL = process.env.REACT_APP_SERVER_URL ?? "http://172.20.10.2:3001";
+const SERVER_URL = "http://172.20.10.2:3001"
 
 export const appAxios = axios.create({
   baseURL: SERVER_URL,

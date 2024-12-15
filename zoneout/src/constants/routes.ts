@@ -17,6 +17,7 @@ export const MAIN_ZONE_DETAILS                  = `${MAIN}-zone-details`
 export const MAIN_USER_DETAILS                  = `${MAIN}-user-details`
 export const MAIN_CAMPUS_DETAILS                = `${MAIN}-campus-details`
 export const MAIN_NOTIFICATION                  = `${MAIN}-notification`
+export const MAIN_CREATE_EVENT                  = `${MAIN}-create-event`
 
 export const ACCOUNT_HOME                       = `${ACCOUNT}-home`
 export const ACCOUNT_NOTIFICATION               = `${ACCOUNT}-notification`

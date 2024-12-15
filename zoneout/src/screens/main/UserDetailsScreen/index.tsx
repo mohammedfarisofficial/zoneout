@@ -14,8 +14,9 @@ import * as FONTS from "@constants/font.ts";
 import Header from "@components/header";
 import { SafeAreaView } from "react-native-safe-area-context";
 import BubbleBackBtn from "@components/ui/bubble-back-btn/index.tsx";
+import { globalStyles } from "src/styles/global-styles.ts";
 
-const TEST_IMAGE_URL_TWO = "https://i1.sndcdn.com/artworks-Xy4J91HgcLHqWYsq-FhfmQw-t500x500.jpg";
+export const TEST_IMAGE_URL_TWO = "https://i1.sndcdn.com/artworks-Xy4J91HgcLHqWYsq-FhfmQw-t500x500.jpg";
 
 type ConnectionDetails = {
   email: string;
@@ -69,7 +70,7 @@ const UserDetailsScreen = ({ route }: any) => {
           <View style={styles.userProfileContent}>
             <View style={styles.profileContainer}>
               <Image
-                style={styles.profileImage}
+                style={globalStyles.profileImage}
                 source={{
                   uri: TEST_IMAGE_URL_TWO,
                 }}

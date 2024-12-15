@@ -1,4 +1,4 @@
-const WEBSOCKET_URL = process.env.REACT_APP_WSS_URL;
+const WEBSOCKET_URL = "ws://172.20.10.2:3001";
 
 console.log("WEBSOCKET_URL",WEBSOCKET_URL)
 
