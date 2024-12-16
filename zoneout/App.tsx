@@ -15,9 +15,9 @@ import { appStorage } from "@services/mmkv-storage";
 import { setLogged } from "@store/auth/reducer";
 import { handleLogout } from "@store/auth/action";
 import { getUserDetails } from "@helper/zoneout-api";
-import { navigationRef } from "@components/custom-tabbar";
 
 import Loader from "@components/ui/loader";
+import AppContext from "@navigation/AppContext";
 
 LogBox.ignoreLogs(["Sending `onAnimatedValueUpdate` with no listeners registered."]);
 
@@ -57,7 +57,7 @@ const App = () => (
   <GestureHandlerRootView style={{ flex: 1 }}>
     <Provider store={store}>
       <PortalProvider>
-        <NavigationContainer ref={navigationRef}>
+        <NavigationContainer ref={ref => AppContext.navigationRef = ref}>
           <Loader />
           <AppContent />
         </NavigationContainer>

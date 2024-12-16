@@ -278,51 +278,51 @@ const MapScreen = ({ navigation }: any) => {
     setAnnotations(featureAnnotations);
   }, [features]);
 
-  useEffect(() => {
-    (async () => {
-      const hasLocationPermission = await requestLocationPermission();
-      if (!hasLocationPermission) {
-        console.log("No permission");
-        return;
-      }
-      const watchId = Geolocation.watchPosition(
-        updateUserPosition,
-        (error: any) => {
-          console.error("Error getting position:", error);
-        },
-        {
-          enableHighAccuracy: true,
-          distanceFilter: 0, // meters
-        },
-      );
-      watchIdRef.current = watchId;
-    })();
-    return () => {
-      if (watchIdRef.current !== null) {
-        Geolocation.clearWatch(watchIdRef.current);
-      }
-    };
-  }, []);
+  // useEffect(() => {
+  //   (async () => {
+  //     const hasLocationPermission = await requestLocationPermission();
+  //     if (!hasLocationPermission) {
+  //       console.log("No permission");
+  //       return;
+  //     }
+  //     const watchId = Geolocation.watchPosition(
+  //       updateUserPosition,
+  //       (error: any) => {
+  //         console.error("Error getting position:", error);
+  //       },
+  //       {
+  //         enableHighAccuracy: true,
+  //         distanceFilter: 0, // meters
+  //       },
+  //     );
+  //     watchIdRef.current = watchId;
+  //   })();
+  //   return () => {
+  //     if (watchIdRef.current !== null) {
+  //       Geolocation.clearWatch(watchIdRef.current);
+  //     }
+  //   };
+  // }, []);
 
-  useEffect(() => {
-      (async ()=> {
-        const hasLocationPermission = await requestLocationPermission();
-        if (!hasLocationPermission) {
-          console.log("No permission")
-          return
-        };
-      Geolocation.watchPosition(
-        (position) => {
-          console.log(position);
-        },
-        (error) => {
-          // See error code charts below.
-          console.log(error.code, error.message);
-        },
-        { enableHighAccuracy: true, distanceFilter: 0 }
-    );
-      })()
-  }, []);
+  // useEffect(() => {
+  //     (async ()=> {
+  //       const hasLocationPermission = await requestLocationPermission();
+  //       if (!hasLocationPermission) {
+  //         console.log("No permission")
+  //         return
+  //       };
+  //     Geolocation.watchPosition(
+  //       (position) => {
+  //         console.log(position);
+  //       },
+  //       (error) => {
+  //         // See error code charts below.
+  //         console.log(error.code, error.message);
+  //       },
+  //       { enableHighAccuracy: true, distanceFilter: 0 }
+  //   );
+  //     })()
+  // }, []);
 
   console.log("authUser", authUser);
 

@@ -14,7 +14,8 @@ const MainBottomTabNavigator: React.FC = () => {
   return (
     <Tab.Navigator
       screenOptions={{ headerShown: false }}
-      // tabBar={() => null}
+      // tabBar={(props) => <MyTabBar {..props}/>}
+      tabBar={(props)=><CustomTabBar {...props}/>}
     >
       <Tab.Screen name={ROUTES.MAIN} component={MainStackNavigator} />
       <Tab.Screen name={ROUTES.CHAT} component={ChatStackNavigator} />
