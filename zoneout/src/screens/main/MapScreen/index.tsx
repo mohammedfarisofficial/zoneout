@@ -65,6 +65,8 @@ import LongPressMenuModal from "@components/modals/LongPressMenuModal";
 import CreateEvent from "@components/map/create-event";
 import { normalizeHeight, normalizeWidth } from "@utils/scaling";
 import { BlurView } from "@react-native-community/blur";
+import { forceRedirectToAuth } from "@navigation/AppContext";
+import { useTabBarVisibility } from "@components/custom-tabbar/TabBarVisibilityContext";
 
 // import LinearGradient from "react-native-linear-gradient";
 // import { BlurView } from "@react-native-community/blur";
@@ -242,6 +244,8 @@ const MapScreen = ({ navigation }: any) => {
   const [events, setEvents] = useState([]);
   const [selectedPoints, setSelectedPoints] = useState(null);
   const [selectedUser, setSelectedUser] = useState<Connection | null>(null);
+
+  const { hideTabBar } = useTabBarVisibility();
 
   const [selectedZoneCoords, setSelectedZoneCoords] = useState({ latitude: 0, longitude: 0 });
 
@@ -550,7 +554,7 @@ const MapScreen = ({ navigation }: any) => {
         />
       </Portal>
 
-      <TouchableOpacity onPress={() => setEvents([])} style={{ position: "absolute", top: 50, right: 10, zIndex: 99 }} activeOpacity={0.5}>
+      <TouchableOpacity onPress={() => forceRedirectToAuth()} style={{ position: "absolute", top: 50, right: 10, zIndex: 99 }} activeOpacity={0.5}>
         <View
           style={{
             width: scale(32),
@@ -590,7 +594,8 @@ const MapScreen = ({ navigation }: any) => {
           }}></View>
       </TouchableOpacity>
       <TouchableOpacity
-        onPress={() => navigation.navigate(ROUTES.MAIN, { screen: ROUTES.MAIN_NOTIFICATION })}
+        // onPress={() => navigation.navigate(ROUTES.MAIN, { screen: ROUTES.MAIN_NOTIFICATION })}
+        onPress={hideTabBar}
         style={{ position: "absolute", top: 200, right: 10, zIndex: 99 }}
         activeOpacity={0.5}>
         <View

@@ -18,6 +18,7 @@ import { getUserDetails } from "@helper/zoneout-api";
 
 import Loader from "@components/ui/loader";
 import AppContext from "@navigation/AppContext";
+import { TabBarVisibilityProvider } from "@components/custom-tabbar/TabBarVisibilityContext";
 
 LogBox.ignoreLogs(["Sending `onAnimatedValueUpdate` with no listeners registered."]);
 
@@ -57,10 +58,12 @@ const App = () => (
   <GestureHandlerRootView style={{ flex: 1 }}>
     <Provider store={store}>
       <PortalProvider>
-        <NavigationContainer ref={ref => AppContext.navigationRef = ref}>
+      <TabBarVisibilityProvider>
+        <NavigationContainer ref={ref => (AppContext.navigationRef = ref)}>
           <Loader />
           <AppContent />
         </NavigationContainer>
+        </TabBarVisibilityProvider>
       </PortalProvider>
     </Provider>
   </GestureHandlerRootView>
