@@ -8,13 +8,13 @@ import { View } from "react-native";
 
 interface Props {
   selectedPoints: any;
-  onChange?: () => void;
+  onChange?: (index:number) => void;
   setEventCoords: (selectedPoints: any) => void;
   onEventCreation?: () => void;
 }
 
-const LongPressMenuModal = forwardRef<BottomSheet, Props>(({ onChange, onEventCreation, setEventCoords, selectedPoints }, ref) => {
-  const snapPoints = useMemo(() => ["25%"], []); // Height of the BottomSheet
+const LongPressMenuModal = forwardRef<BottomSheet, Props>(({ onChange,onEventCreation, setEventCoords, selectedPoints }, ref) => {
+  const snapPoints = useMemo(() => ["25%"], []); 
 
   const handleCreateZone = () => {
     setEventCoords(selectedPoints);

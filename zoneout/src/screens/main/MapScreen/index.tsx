@@ -66,7 +66,7 @@ import CreateEvent from "@components/map/create-event";
 import { normalizeHeight, normalizeWidth } from "@utils/scaling";
 import { BlurView } from "@react-native-community/blur";
 import { forceRedirectToAuth } from "@navigation/AppContext";
-import { useTabBarVisibility } from "@components/custom-tabbar/TabBarVisibilityContext";
+import { useTabBarVisibility } from "@components/custom-tabbar/TabBarContext";
 
 // import LinearGradient from "react-native-linear-gradient";
 // import { BlurView } from "@react-native-community/blur";
@@ -245,7 +245,7 @@ const MapScreen = ({ navigation }: any) => {
   const [selectedPoints, setSelectedPoints] = useState(null);
   const [selectedUser, setSelectedUser] = useState<Connection | null>(null);
 
-  const { hideTabBar } = useTabBarVisibility();
+  const { tabBarVisibility, showTabBar, hideTabBar } = useTabBarVisibility();
 
   const [selectedZoneCoords, setSelectedZoneCoords] = useState({ latitude: 0, longitude: 0 });
 
@@ -258,6 +258,9 @@ const MapScreen = ({ navigation }: any) => {
 
   const { collegeRegion } = useSelector((state: RootState) => state.data);
   const { authUser, userCampus } = useSelector((state: RootState) => state.auth);
+
+  const [initialTouch, setInitialTouch] = useState<null | { pageX: number; pageY: number }>(null);
+  const [touchStartTime, setTouchStartTime] = useState<number | null>(null);
 
   const cameraRef = useRef<Camera | null>(null);
   const longPressModalRef = useRef<BottomSheet>(null);
@@ -327,8 +330,6 @@ const MapScreen = ({ navigation }: any) => {
   //   );
   //     })()
   // }, []);
-
-  console.log("authUser", authUser);
 
   const updateUserPosition = (position: any) => {
     // console.log("position.coords",position.coords);
@@ -502,6 +503,33 @@ const MapScreen = ({ navigation }: any) => {
     longPressModalRef.current?.close();
   };
 
+  const handleTouchStart = (e: { nativeEvent: { pageX: number; pageY: number } }) => {
+    setInitialTouch(e.nativeEvent);
+    setTouchStartTime(Date.now());
+  };
+
+  const handleTouchMove = (e: { nativeEvent: { pageX: number; pageY: number } }) => {
+    if (!initialTouch || touchStartTime === null) return;
+
+    const { pageX, pageY } = e.nativeEvent;
+    const moveX = Math.abs(pageX - initialTouch.pageX);
+    const moveY = Math.abs(pageY - initialTouch.pageY);
+    const moveThreshold = 10;
+    const timeThreshold = 300;
+    const currentTime = Date.now();
+    const timeElapsed = currentTime - touchStartTime;
+
+    if ((moveX > moveThreshold || moveY > moveThreshold) && timeElapsed > timeThreshold) {
+      hideTabBar();
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setInitialTouch(null);
+    setTouchStartTime(null);
+    showTabBar();
+  };
+
   return (
     <View style={styles.container}>
       {/* Bottom Modals  */}
@@ -531,7 +559,14 @@ const MapScreen = ({ navigation }: any) => {
           onEventCreation={eventCreationHanlder}
           setEventCoords={setEventCoords}
           ref={longPressModalRef}
-          onChange={() => {}}
+          onChange={index => {
+            if (index === 1) {
+              hideTabBar();
+            }
+            if (index === -1) {
+              showTabBar();
+            }
+          }}
         />
         {/* Zone Click  */}
         <ZoneDetailsModal
@@ -595,7 +630,7 @@ const MapScreen = ({ navigation }: any) => {
       </TouchableOpacity>
       <TouchableOpacity
         // onPress={() => navigation.navigate(ROUTES.MAIN, { screen: ROUTES.MAIN_NOTIFICATION })}
-        onPress={hideTabBar}
+        onPress={() => (tabBarVisibility.value ? hideTabBar() : showTabBar())}
         style={{ position: "absolute", top: 200, right: 10, zIndex: 99 }}
         activeOpacity={0.5}>
         <View
@@ -672,6 +707,9 @@ const MapScreen = ({ navigation }: any) => {
       {/* Map  */}
       <MapView
         attributionEnabled
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
         style={styles.container}
         pitchEnabled={true}
         logoEnabled={false}
@@ -680,7 +718,6 @@ const MapScreen = ({ navigation }: any) => {
         // styleURL="mapbox://styles/mohammedfarisofficial1/clfgrkcas000801qxj8qp9reg"
         // styleURL="mapbox://styles/mapbox/dark-v11"
         styleURL="mapbox://styles/mapbox/light-v11"
-        onMapIdle={e => console.log("Region Changed:", e)}
         onPress={(e: any) => {
           if (eventCoords != null) {
             setEventCoords(e.geometry.coordinates);

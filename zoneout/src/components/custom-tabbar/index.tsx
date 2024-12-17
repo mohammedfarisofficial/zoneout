@@ -1,34 +1,34 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ViewStyle, TextStyle } from "react-native";
+import { useEffect } from "react";
+import { Text, TouchableOpacity, StyleSheet, ViewStyle, TextStyle } from "react-native";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import Animated, { useAnimatedStyle, withTiming, FadeInDown, FadeOutDown } from "react-native-reanimated";
 
-import * as ROUTES from "@constants/routes";
+import { useTabBarVisibility } from "./TabBarContext";
 import AppContext from "@navigation/AppContext";
 
+import * as ROUTES from "@constants/routes";
+
 const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation }) => {
-  const currentRouteName = AppContext.navigationRef?.getCurrentRoute()?.name as string;
+  const { tabBarVisibility } = useTabBarVisibility();
 
-  const hideTabBarRoutes = [ROUTES.ACCOUNT_NOTIFICATION, ROUTES.MAIN_NOTIFICATION, ROUTES.USER_CHAT];
-  const [isVisible, setIsVisible] = useState(true);
+  const excludedRoutes = [ROUTES.ACCOUNT_NOTIFICATION, ROUTES.MAIN_NOTIFICATION, ROUTES.USER_CHAT];
 
-  // Detect route changes and update tab bar visibility
   useEffect(() => {
-    const shouldHideTabBar = hideTabBarRoutes.includes(currentRouteName);
-    setIsVisible(!shouldHideTabBar);
-  }, [currentRouteName]);
+    const currentRouteName = AppContext.navigationRef?.getCurrentRoute()?.name as string;
+    const shouldHideTabBar = excludedRoutes.includes(currentRouteName);
+    tabBarVisibility.value = !shouldHideTabBar;
+  }, [navigation, state.index, tabBarVisibility, excludedRoutes]);
 
-  // Animated styles for showing/hiding the tab bar
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: withTiming(isVisible ? 0 : 100, { duration: 300 }) }],
-    opacity: withTiming(isVisible ? 1 : 0, { duration: 300 }),
+    transform: [{ translateY: withTiming(tabBarVisibility.value ? 0 : 100, { duration: 300 }) }],
+    opacity: withTiming(tabBarVisibility.value ? 1 : 0, { duration: 300 }),
   }));
 
   return (
     <Animated.View
       entering={FadeInDown}
       exiting={FadeOutDown}
-      style={styles.wrapper} // Outer wrapper for layout animations
+      style={styles.wrapper}
     >
       <Animated.View style={[styles.tabBar, animatedStyle]}>
         {state.routes.map((route, index) => {
@@ -65,7 +65,6 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigat
   );
 };
 
-// Styles for the custom tab bar
 const styles = StyleSheet.create({
   wrapper: {
     position: "absolute",
